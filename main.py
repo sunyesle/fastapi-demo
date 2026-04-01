@@ -21,6 +21,15 @@ def get_db():
         db.close()
 
 
+@app.get("/items/")
+def get_items(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+) -> List[Item]:
+    return service.get_items(db, skip=skip, limit=limit)
+
+
 @app.post("/items/")
 def create_item(
     item_create: ItemCreate,

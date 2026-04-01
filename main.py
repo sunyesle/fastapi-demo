@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from database import engine, SessionLocal
@@ -28,6 +28,19 @@ def get_items(
     db: Session = Depends(get_db),
 ) -> List[Item]:
     return service.get_items(db, skip=skip, limit=limit)
+
+
+@app.get("/items/{id}")
+def get_item(
+    id: int,
+    db: Session = Depends(get_db),             
+) -> Item:
+    item = service.get_item(db, id)
+    
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    return item
 
 
 @app.post("/items/")

@@ -1,8 +1,29 @@
-from fastapi import FastAPI
+from typing import List
+
+from fastapi import Depends, FastAPI
+from sqlalchemy.orm import Session
+
+from database import engine, SessionLocal
+from models import Model
+from schemas import Item, ItemCreate
+import service
 
 app = FastAPI()
 
+Model.metadata.create_all(bind=engine)
 
-@app.get("/")
-def root():
-    return {"Hello": "World"}
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@app.post("/items/")
+def create_item(
+    item_create: ItemCreate,
+    db: Session = Depends(get_db),
+) -> Item:
+    return service.create_item(db, item_create=item_create)

@@ -30,3 +30,8 @@ def update_item(db: Session, item: Item, item_update: ItemUpdate):
     db.commit()
     db.refresh(item)
     return item
+
+def delete_item(db: Session, item: Item):
+    db.delete(item)
+    db.commit()
+    return item

@@ -63,3 +63,18 @@ def update_item(
         raise HTTPException(status_code=404, detail="Item not found")
     
     return service.update_item(db, item, item_update)
+
+
+@app.delete("/items/{id}", status_code=204)
+def delete_item(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    item = service.get_item(db, id)
+
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    service.delete_item(db, item)
+    
+    return None

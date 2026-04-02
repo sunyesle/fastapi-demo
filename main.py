@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from database import engine, SessionLocal
 from models import Model
-from schemas import Item, ItemCreate
+from schemas import Item, ItemCreate, ItemUpdate
 import service
 
 app = FastAPI()
@@ -48,4 +48,18 @@ def create_item(
     item_create: ItemCreate,
     db: Session = Depends(get_db),
 ) -> Item:
-    return service.create_item(db, item_create=item_create)
+    return service.create_item(db, item_create)
+
+
+@app.put("/items/{id}")
+def update_item(
+    id: int,
+    item_update: ItemUpdate,
+    db: Session = Depends(get_db),
+) -> Item:
+    item = service.get_item(db, id)
+
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    return service.update_item(db, item, item_update)

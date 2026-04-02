@@ -13,3 +13,7 @@ class ItemCreate(ItemBase):
 
 class Item(ItemBase):
     id: int
+
+class ItemUpdate(Schema):
+    name: str | None = None
+    price: int | None = None

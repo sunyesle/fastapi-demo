@@ -3,10 +3,10 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-from database import engine, SessionLocal
-from models import Model
-from schemas import Item, ItemCreate, ItemUpdate
-import service
+from src.database import engine, SessionLocal
+from src.models import Model
+from src.schemas import Item, ItemCreate, ItemUpdate
+import src.service as service
 
 app = FastAPI()
 

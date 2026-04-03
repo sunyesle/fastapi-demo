@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from models import Item
-from schemas import ItemCreate, ItemUpdate
+from src.models import Item
+from src.schemas import ItemCreate, ItemUpdate
 
 
 def get_items(db: Session, skip: int = 0, limit: int = 100):

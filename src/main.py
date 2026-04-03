@@ -1,8 +1,9 @@
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
+from src.common.models import Model
 from src.database import engine, SessionLocal
-from src.models import Model, Item
+from src.models import Item
 from src.schemas import Item as ItemSchema
 from src.schemas import ItemCreate, ItemUpdate
 import src.service as service

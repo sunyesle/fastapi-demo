@@ -1,8 +1,5 @@
-from pydantic import BaseModel, ConfigDict
+from src.common.schemas import IDSchema, Schema
 
-
-class Schema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
 
 class ItemBase(Schema):
     name: str
@@ -11,8 +8,8 @@ class ItemBase(Schema):
 class ItemCreate(ItemBase):
     pass
 
-class Item(ItemBase):
-    id: int
+class Item(ItemBase, IDSchema):
+    pass
 
 class ItemUpdate(Schema):
     name: str | None = None

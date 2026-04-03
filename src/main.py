@@ -1,11 +1,10 @@
-from typing import List
-
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from src.database import engine, SessionLocal
-from src.models import Model
-from src.schemas import Item, ItemCreate, ItemUpdate
+from src.models import Model, Item
+from src.schemas import Item as ItemSchema
+from src.schemas import ItemCreate, ItemUpdate
 import src.service as service
 
 app = FastAPI()
@@ -21,16 +20,16 @@ def get_db():
         db.close()
 
 
-@app.get("/items/")
+@app.get("/items/", response_model=list[ItemSchema])
 def get_items(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-) -> List[Item]:
+) -> list[Item]:
     return service.get_items(db, skip=skip, limit=limit)
 
 
-@app.get("/items/{id}")
+@app.get("/items/{id}", response_model=ItemSchema)
 def get_item(
     id: int,
     db: Session = Depends(get_db),             
@@ -43,7 +42,7 @@ def get_item(
     return item
 
 
-@app.post("/items/")
+@app.post("/items/", response_model=ItemSchema)
 def create_item(
     item_create: ItemCreate,
     db: Session = Depends(get_db),
@@ -51,7 +50,7 @@ def create_item(
     return service.create_item(db, item_create)
 
 
-@app.put("/items/{id}")
+@app.put("/items/{id}", response_model=ItemSchema)
 def update_item(
     id: int,
     item_update: ItemUpdate,

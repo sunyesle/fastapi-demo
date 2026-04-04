@@ -15,8 +15,7 @@ def get_item(db: Session, id: int):
 def create_item(db: Session, item_create: ItemCreate):
     item = Item(**item_create.model_dump())
     db.add(item)
-    db.commit()
-    db.refresh(item)
+    db.flush()
     return item
 
 def update_item(db: Session, item: Item, item_update: ItemUpdate):
@@ -27,11 +26,10 @@ def update_item(db: Session, item: Item, item_update: ItemUpdate):
         item.price = item_update.price
     
     db.add(item)
-    db.commit()
-    db.refresh(item)
+    db.flush()
     return item
 
 def delete_item(db: Session, item: Item):
     db.delete(item)
-    db.commit()
+    db.flush()
     return item

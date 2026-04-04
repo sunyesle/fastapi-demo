@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from src.models import Item
-from src.schemas import ItemCreate, ItemUpdate
+from src.item.schemas import ItemCreate, ItemUpdate
 
 
 def get_items(db: Session, skip: int = 0, limit: int = 100):
@@ -12,18 +12,18 @@ def get_item(db: Session, id: int):
     return db.query(Item).filter(Item.id == id).first()
 
 
-def create_item(db: Session, item_create: ItemCreate):
-    item = Item(**item_create.model_dump())
+def create_item(db: Session, create_schema: ItemCreate):
+    item = Item(**create_schema.model_dump())
     db.add(item)
     db.flush()
     return item
 
-def update_item(db: Session, item: Item, item_update: ItemUpdate):
-    if item_update.name is not None:
-        item.name = item_update.name
+def update_item(db: Session, item: Item, update_schema: ItemUpdate):
+    if update_schema.name is not None:
+        item.name = update_schema.name
     
-    if item_update.price is not None:
-        item.price = item_update.price
+    if update_schema.price is not None:
+        item.price = update_schema.price
     
     db.add(item)
     db.flush()

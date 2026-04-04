@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.database import get_db_read_session, get_db_session
+from src.exceptions import ResourceNotFound
 from src.item import service as item_service
 from src.item.schemas import Item as ItemSchema, ItemCreate, ItemUpdate
 from src.models.item import Item
+
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -25,7 +27,7 @@ def get_item(
     item = item_service.get_item(db, id)
     
     if item is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise ResourceNotFound()
     
     return item
 
@@ -47,7 +49,7 @@ def update_item(
     item = item_service.get_item(db, id)
 
     if item is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise ResourceNotFound()
     
     return item_service.update_item(db, item, item_update)
 
@@ -60,7 +62,7 @@ def delete_item(
     item = item_service.get_item(db, id)
 
     if item is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise ResourceNotFound()
     
     item_service.delete_item(db, item)
     

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from src.common.models import Model
 from src.api import router
 from src.database import create_engine, create_sessionmaker
+from src.exeption_handlers import add_exception_handlers
 
 
 class State(TypedDict):
@@ -36,6 +37,8 @@ def create_app() -> FastAPI:
     app = FastAPI(
         lifespan=lifespan
     )
+
+    add_exception_handlers(app)
 
     app.include_router(router)
 

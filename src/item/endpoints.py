@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -15,7 +17,7 @@ def get_items(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db_read_session),
-) -> list[Item]:
+) -> Sequence[Item]:
     return item_service.get_items(db, skip=skip, limit=limit)
 
 

@@ -1,10 +1,10 @@
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.common.models import IDModel
+from src.common.models import RecordModel
 
 
-class Item(IDModel):
+class Item(RecordModel):
     __tablename__ = "items"
     
     name: Mapped[str] = mapped_column(String)

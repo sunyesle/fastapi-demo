@@ -1,4 +1,4 @@
-from src.common.schemas import IDSchema, Schema
+from src.common.schemas import IDSchema, Schema, TimestampedSchema
 
 
 class ItemBase(Schema):
@@ -8,7 +8,7 @@ class ItemBase(Schema):
 class ItemCreate(ItemBase):
     pass
 
-class Item(ItemBase, IDSchema):
+class Item(ItemBase, IDSchema, TimestampedSchema):
     pass
 
 class ItemUpdate(Schema):

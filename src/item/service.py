@@ -6,14 +6,25 @@ from src.item.schemas import ItemCreate, ItemUpdate
 
 
 def get_items(db: Session, skip: int = 0, limit: int = 100):
-    statement = select(Item).offset(skip).limit(limit)
+    statement = (
+        select(Item)
+        .where(Item.deleted_at.is_(None))
+        .offset(skip)
+        .limit(limit)
+    )
 
     result = db.execute(statement)
     return result.scalars().all()
 
 
 def get_item(db: Session, id: int):
-    statement = select(Item).where(Item.id == id)
+    statement = (
+        select(Item)
+        .where(
+            Item.id == id,
+            Item.deleted_at.is_(None)
+        )
+    )
 
     result = db.execute(statement)
     return result.unique().scalar_one_or_none()
@@ -39,6 +50,6 @@ def update_item(db: Session, item: Item, update_schema: ItemUpdate):
 
 
 def delete_item(db: Session, item: Item):
-    db.delete(item)
+    item.set_deleted_at()
     db.flush()
     return item

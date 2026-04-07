@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from src.database import get_db_read_session, get_db_session
@@ -34,7 +34,7 @@ def get_product(
     return product
 
 
-@router.post("/", response_model=ProductSchema)
+@router.post("/", response_model=ProductSchema, status_code=201)
 def create_product(
     product_create: ProductCreate,
     db: Session = Depends(get_db_session),

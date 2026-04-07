@@ -1,16 +1,16 @@
 from src.common.schemas import IDSchema, Schema, TimestampedSchema
 
 
-class ItemBase(Schema):
+class ProductBase(Schema):
     name: str
     price: int
 
-class ItemCreate(ItemBase):
+class ProductCreate(ProductBase):
     pass
 
-class Item(ItemBase, IDSchema, TimestampedSchema):
+class Product(ProductBase, IDSchema, TimestampedSchema):
     pass
 
-class ItemUpdate(Schema):
+class ProductUpdate(Schema):
     name: str | None = None
     price: int | None = None

@@ -10,3 +10,9 @@ wheels/
 .venv
 
 .vscode
+
+# 환경 변수
+.env
+
+# 데이터베이스 파일
+*.db

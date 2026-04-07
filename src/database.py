@@ -5,11 +5,12 @@ from sqlalchemy import Engine, create_engine as _create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-DATABASE_URL = "sqlite:///:memory:"
+from src.config import settings
+
 
 def create_engine() -> Engine:
     return _create_engine(
-        DATABASE_URL,
+        settings.DATABASE_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
         echo=True,
@@ -38,7 +39,6 @@ def get_db_session(request: Request) -> Generator[Session, None, None]:
         raise
     finally:
         session.close()
-
 
 def get_db_read_session(request: Request) -> Generator[Session, None, None]:
     # lifespan에서 저장한 sessionmaker를 사용

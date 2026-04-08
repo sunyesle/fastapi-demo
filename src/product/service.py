@@ -8,7 +8,6 @@ from src.product.schemas import ProductCreate, ProductUpdate
 def get_products(session: Session, skip: int = 0, limit: int = 100):
     statement = (
         select(Product)
-        .where(Product.deleted_at.is_(None))
         .offset(skip)
         .limit(limit)
     )
@@ -20,10 +19,7 @@ def get_products(session: Session, skip: int = 0, limit: int = 100):
 def get_product(session: Session, id: int):
     statement = (
         select(Product)
-        .where(
-            Product.id == id,
-            Product.deleted_at.is_(None)
-        )
+        .where(Product.id == id)
     )
 
     result = session.execute(statement)
@@ -50,6 +46,6 @@ def update_product(session: Session, product: Product, update_schema: ProductUpd
 
 
 def delete_product(session: Session, product: Product):
-    product.set_deleted_at()
+    session.delete(product)
     session.flush()
     return product

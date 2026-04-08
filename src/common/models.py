@@ -23,15 +23,9 @@ class TimestampedModel(Model):
     modified_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), onupdate=utc_now, nullable=True, default=None
     )
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=True, default=None, index=True
-    )
 
     def set_modified_at(self) -> None:
         self.modified_at = utc_now()
-
-    def set_deleted_at(self) -> None:
-        self.deleted_at = utc_now()
 
 class RecordModel(IDModel, TimestampedModel):
     __abstract__ = True

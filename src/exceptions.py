@@ -1,6 +1,8 @@
-from typing import ClassVar, Literal
+from typing import Any, ClassVar, Literal, LiteralString, Sequence, TypedDict
 
 from pydantic import BaseModel, Field, create_model
+from pydantic_core import ErrorDetails, InitErrorDetails, PydanticCustomError
+from pydantic_core import ValidationError as PydanticValidationError
 
 
 class CustomException(Exception):
@@ -35,3 +37,29 @@ class CustomException(Exception):
 class ResourceNotFound(CustomException):
     def __init__(self, message: str = "Not found", status_code = 404) -> None:
         super().__init__(message, status_code)
+
+
+class ValidationError(TypedDict):
+    loc: tuple[int | str, ...]
+    msg: LiteralString
+    type: LiteralString
+    input: Any
+
+class CustomRequestValidationError(CustomException):
+    def __init__(self, errors: Sequence[ValidationError]) -> None:
+        self._errors = errors
+
+    def errors(self) -> list[ErrorDetails]:
+        pydantic_errors: list[InitErrorDetails] = []
+        for error in self._errors:
+            pydantic_errors.append(
+                {
+                    "type": PydanticCustomError(error["type"], error["msg"]),
+                    "loc": error["loc"],
+                    "input": error["input"],
+                }
+            )
+        pydantic_error = PydanticValidationError.from_exception_data(
+            self.__class__.__name__, pydantic_errors
+        )
+        return pydantic_error.errors()

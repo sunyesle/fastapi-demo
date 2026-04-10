@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.category.schemas import CategoryCreate, CategorySchema
 from src.category.service import category_service
@@ -12,19 +12,19 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 
 
 @router.post("/", response_model=CategorySchema, status_code=201)
-def create(
+async def create(
     category_create: CategoryCreate,
-    session: Session = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_session),
 ) -> Category:
-    return category_service.create(session, category_create)
+    return await category_service.create(session, category_create)
 
 @router.get("/", response_model=Page[CategorySchema])
-def list(
+async def list(
     pagination: PaginationQuery,
     active_only: bool = True,
-    session: Session = Depends(get_db_read_session),
+    session: AsyncSession = Depends(get_db_read_session),
 ) -> Page[CategorySchema]:
-    results, count = category_service.list(session, active_only, pagination)
+    results, count = await category_service.list(session, active_only, pagination)
 
     return Page.from_paginated_results(
         [CategorySchema.model_validate(r) for r in results],

@@ -1,51 +1,53 @@
 from collections.abc import Generator
+from typing import AsyncGenerator
 
 from fastapi import Request
-from sqlalchemy import Engine, create_engine as _create_engine
-from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine as _create_async_engine
 
+from src.common.models import Model
 from src.config import settings
 
 
-def create_engine() -> Engine:
-    return _create_engine(
+def create_engine() -> AsyncEngine:
+    return _create_async_engine(
         settings.DATABASE_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
         echo=True,
     )
 
-def create_sessionmaker(engine: Engine) -> sessionmaker[Session]:
-    return sessionmaker(
+def create_sessionmaker(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(
         bind=engine,
         autocommit=False,
         autoflush=False,
         expire_on_commit=False,
-        class_=Session
+        class_=AsyncSession
     )
 
 
-def get_db_session(request: Request) -> Generator[Session, None, None]:
+async def init_db(engine: AsyncEngine):
+    async with engine.begin() as conn:
+        await conn.run_sync(Model.metadata.create_all)
+
+
+async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession]:
     # lifespan에서 저장한 sessionmaker를 사용
     sessionmaker = request.state.sessionmaker
     
-    session: Session = sessionmaker()
-    try:
-        yield session
-        session.commit()
-    except:
-        session.rollback()
-        raise
-    finally:
-        session.close()
+    async with sessionmaker() as session:
+        try:
+            yield session
+        except:
+            await session.rollback()
+            raise
+        else:
+            await session.commit()
 
-def get_db_read_session(request: Request) -> Generator[Session, None, None]:
+async def get_db_read_session(request: Request) -> AsyncGenerator[AsyncSession]:
     # lifespan에서 저장한 sessionmaker를 사용
     sessionmaker = request.state.sessionmaker
 
-    session: Session = sessionmaker()
-    try:
+    async with sessionmaker() as session:
         yield session
-    finally:
-        session.close()

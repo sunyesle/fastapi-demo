@@ -2,18 +2,17 @@ import contextlib
 from typing import AsyncIterator, TypedDict
 
 from fastapi import FastAPI
-from sqlalchemy import Engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine as _create_async_engine
 
 from src.common.models import Model
 from src.api import router
-from src.database import create_engine, create_sessionmaker
+from src.database import create_engine, create_sessionmaker, init_db
 from src.exeption_handlers import add_exception_handlers
 
 
 class State(TypedDict):
-    engine: Engine
-    sessionmaker: sessionmaker[Session]
+    engine: AsyncEngine
+    sessionmaker: async_sessionmaker[AsyncSession]
 
 
 @contextlib.asynccontextmanager
@@ -22,7 +21,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[State]:
     engine = create_engine()
     sessionmaker = create_sessionmaker(engine)
 
-    Model.metadata.create_all(bind=engine)
+    await init_db(engine)
 
     yield{
         "engine": engine,
@@ -30,7 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[State]:
     }
 
     # [SHUTDOWN] 서버가 꺼질 때 실행될 로직
-    engine.dispose()
+    await engine.dispose()
 
 
 def create_app() -> FastAPI:

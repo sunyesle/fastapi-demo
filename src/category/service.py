@@ -3,7 +3,7 @@ from typing import Sequence
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.category.schemas import CategoryCreate
+from src.category.schemas import CategoryCreate, CategoryUpdate
 from src.common.pagination import Pagination
 from src.exceptions import CustomRequestValidationError
 from src.models.category import Category
@@ -82,6 +82,15 @@ class CategoryService:
             setattr(category, key, value)
 
         session.add(category)
+        await session.flush()
+        return category
+
+    async def delete(
+        self,
+        session: AsyncSession,
+        category: Category,
+    ) -> Category:
+        await session.delete(category)
         await session.flush()
         return category
 

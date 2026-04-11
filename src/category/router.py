@@ -59,3 +59,15 @@ async def update(
     await category_service.update(session, category, category_update)
 
     return category
+
+@router.delete("/{id}", status_code=204)
+async def delete(
+    id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    category = await category_service.get(session, id)
+
+    if category is None:
+        raise ResourceNotFound()
+    
+    await category_service.delete(session, category)

@@ -11,13 +11,6 @@ from src.models.category import Category
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
-@router.post("/", response_model=CategorySchema, status_code=201)
-async def create(
-    category_create: CategoryCreate,
-    session: AsyncSession = Depends(get_db_session),
-) -> Category:
-    return await category_service.create(session, category_create)
-
 @router.get("/", response_model=Page[CategorySchema])
 async def list(
     pagination: PaginationQuery,
@@ -31,3 +24,10 @@ async def list(
         count,
         pagination
     )
+
+@router.post("/", response_model=CategorySchema, status_code=201)
+async def create(
+    category_create: CategoryCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> Category:
+    return await category_service.create(session, category_create)

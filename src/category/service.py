@@ -11,6 +11,28 @@ from src.models.category import Category
 
 class CategoryService:
 
+    async def list(
+        self,
+        session: AsyncSession,
+        active_only: bool,
+        pagination: Pagination,
+    ) -> tuple[Sequence[Category], int]:
+        statement = select(Category)
+
+        if active_only:
+            statement = statement.where(Category.is_active == True)
+
+        count_statement = select(func.count()).select_from(statement.subquery())
+        count_result = await session.execute(count_statement)
+        count = count_result.scalar_one()
+
+        offset = (pagination.page - 1) * pagination.size
+        statement = statement.offset(offset).limit(pagination.size)
+        result = await session.execute(statement)
+        results = result.scalars().all()
+
+        return results, count
+
     async def create(
         self,
         session: AsyncSession,
@@ -41,28 +63,6 @@ class CategoryService:
         statement = select(Category).where(Category.slug == slug)
         result = await session.execute(statement)
         return result.scalar_one_or_none() is not None
-
-    async def list(
-        self,
-        session: AsyncSession,
-        active_only: bool,
-        pagination: Pagination,
-    ) -> tuple[Sequence[Category], int]:
-        statement = select(Category)
-
-        if active_only:
-            statement = statement.where(Category.is_active == True)
-
-        count_statement = select(func.count()).select_from(statement.subquery())
-        count_result = await session.execute(count_statement)
-        count = count_result.scalar_one()
-
-        offset = (pagination.page - 1) * pagination.size
-        statement = statement.offset(offset).limit(pagination.size)
-        result = await session.execute(statement)
-        results = result.scalars().all()
-
-        return results, count
 
 
 category_service = CategoryService()

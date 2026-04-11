@@ -71,5 +71,19 @@ class CategoryService:
         result = await session.execute(statement)
         return result.scalar_one_or_none() is not None
 
+    async def update(
+        self,
+        session: AsyncSession,
+        category: Category,
+        update_schema: CategoryUpdate,
+    ) -> Category:
+        update_data = update_schema.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(category, key, value)
+
+        session.add(category)
+        await session.flush()
+        return category
+
 
 category_service = CategoryService()

@@ -10,8 +10,14 @@ class CategoryBase(Schema):
     is_active: bool = True
     sort_order: int = 0
 
+class CategorySchema(CategoryBase, IDSchema, TimestampedSchema):
+    pass
+
 class CategoryCreate(CategoryBase):
     pass
 
-class CategorySchema(CategoryBase, IDSchema, TimestampedSchema):
-    pass
+class CategoryUpdate(Schema):
+    name: str | None = Field(default=None, max_length=50)
+    description: str | None = Field(default=None, max_length=50)
+    is_active: bool | None = None
+    sort_order: int | None = None

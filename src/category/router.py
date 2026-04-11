@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.category.schemas import CategoryCreate, CategorySchema
+from src.category.schemas import CategoryCreate, CategorySchema, CategoryUpdate
 from src.category.service import category_service
 from src.common.pagination import Page, PaginationQuery
 from src.database import get_db_read_session, get_db_session
@@ -44,3 +44,18 @@ async def create(
     session: AsyncSession = Depends(get_db_session),
 ) -> Category:
     return await category_service.create(session, category_create)
+
+@router.put("/{id}", response_model=CategorySchema)
+async def update(
+    id: int,
+    category_update: CategoryUpdate,
+    session: AsyncSession = Depends(get_db_session),
+) -> Category:
+    category = await category_service.get(session, id)
+
+    if category is None:
+        raise ResourceNotFound()
+    
+    await category_service.update(session, category, category_update)
+
+    return category

@@ -5,6 +5,7 @@ from src.category.schemas import CategoryCreate, CategorySchema
 from src.category.service import category_service
 from src.common.pagination import Page, PaginationQuery
 from src.database import get_db_read_session, get_db_session
+from src.exceptions import ResourceNotFound
 from src.models.category import Category
 
 
@@ -24,6 +25,18 @@ async def list(
         count,
         pagination
     )
+
+@router.get("/{id}", response_model=CategorySchema)
+async def get(
+    id: int,
+    session: AsyncSession = Depends(get_db_read_session),
+) -> Category:
+    category = await category_service.get(session, id)
+
+    if category is None:
+        raise ResourceNotFound()
+    
+    return category
 
 @router.post("/", response_model=CategorySchema, status_code=201)
 async def create(

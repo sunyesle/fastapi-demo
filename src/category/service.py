@@ -33,6 +33,13 @@ class CategoryService:
 
         return results, count
 
+    async def get(
+        self,
+        session: AsyncSession,
+        id: int,
+    ) -> Category | None:
+        return await session.get(Category, id)
+
     async def create(
         self,
         session: AsyncSession,

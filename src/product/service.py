@@ -25,7 +25,7 @@ class ProductService:
             .options(selectinload(Product.category))
             .options(selectinload(Product.images))
         )
-        
+
         if active_only:
             statement = statement.where(Product.is_active == True)
         if featured_only:
@@ -44,10 +44,24 @@ class ProductService:
 
         return results, count
 
+    async def get(
+        self,
+        session: AsyncSession,
+        id: int,
+    ) -> Product | None:
+        statement = (
+            select(Product)
+            .options(selectinload(Product.category))
+            .options(selectinload(Product.images))
+            .where(Product.id == id)
+        )
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
+
     async def create(
-            self,
-            session: AsyncSession,
-            create_schema: ProductCreate,
+        self,
+        session: AsyncSession,
+        create_schema: ProductCreate,
     ) -> Product:
         if await self.slug_exists(session, create_schema.slug):
             raise CustomRequestValidationError(

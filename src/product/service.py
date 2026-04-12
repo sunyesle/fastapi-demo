@@ -114,11 +114,18 @@ class ProductService:
         await session.flush()
         return product
 
+    async def get_image(
+        self,
+        session: AsyncSession,
+        image_id: int,
+    ) -> ProductImage | None:
+        return await session.get(ProductImage, image_id)
+
     async def add_image(
-        self, 
-        session: AsyncSession, 
-        product: Product, 
-        url: str
+        self,
+        session: AsyncSession,
+        product: Product,
+        url: str,
     ) -> ProductImage:
         product_image = ProductImage(
             product_id=product.id,
@@ -127,7 +134,16 @@ class ProductService:
         )
         
         session.add(product_image)
-        await session.flush() 
+        await session.flush()
+        return product_image
+
+    async def delete_image(
+        self,
+        session: AsyncSession,
+        product_image: ProductImage,
+    ) -> ProductImage:
+        await session.delete(product_image)
+        await session.flush()
         return product_image
 
 

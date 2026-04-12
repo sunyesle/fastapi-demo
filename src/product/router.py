@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.common.image import save_image
+from src.common.image import delete_image, save_image
 from src.common.pagination import Page, PaginationQuery
 from src.database import get_db_read_session, get_db_session
 from src.exceptions import ResourceNotFound
@@ -96,3 +96,18 @@ async def save_product_image(
     product_image = await product_service.add_image(session, product, url)
 
     return product_image
+
+@router.delete("/{id}/images/{image_id}", status_code=204)
+async def delete_product_image(
+    id: int,
+    image_id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    image = await product_service.get_image(session, image_id)
+
+    if image is None or image.product_id != id:
+        raise ResourceNotFound()
+    
+    delete_image(image.url)
+
+    await product_service.delete_image(session, image)

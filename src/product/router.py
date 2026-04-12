@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.common.image import save_image
 from src.common.pagination import Page, PaginationQuery
 from src.database import get_db_read_session, get_db_session
 from src.exceptions import ResourceNotFound
 from src.product import service as product_service
-from src.product.schemas import ProductSchema, ProductCreate, ProductUpdate
+from src.product.schemas import ProductImageSchema, ProductSchema, ProductCreate, ProductUpdate
 from src.product.service import product_service
-from src.models.product import Product
+from src.models.product import Product, ProductImage
 
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -78,3 +79,20 @@ async def delete_product(
         raise ResourceNotFound()
     
     await product_service.delete(session, product)
+
+@router.post("/{id}/images", response_model=ProductImageSchema, status_code=201)
+async def save_product_image(
+    id: int,
+    image: UploadFile = File(...),
+    session: AsyncSession = Depends(get_db_session),
+) -> ProductImage:
+    product = await product_service.get(session, id)
+
+    if product is None:
+        raise ResourceNotFound()
+    
+    url = await save_image(image, folder="products")
+
+    product_image = await product_service.add_image(session, product, url)
+
+    return product_image

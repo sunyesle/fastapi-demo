@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload
 from src.common.pagination import Pagination
 from src.exceptions import CustomRequestValidationError
 from src.models import Product
+from src.models.product import ProductImage
 from src.product.schemas import ProductCreate, ProductUpdate
 
 
@@ -112,6 +113,22 @@ class ProductService:
         await session.delete(product)
         await session.flush()
         return product
+
+    async def add_image(
+        self, 
+        session: AsyncSession, 
+        product: Product, 
+        url: str
+    ) -> ProductImage:
+        product_image = ProductImage(
+            product_id=product.id,
+            url=url,
+            sort_order=len(product.images)
+        )
+        
+        session.add(product_image)
+        await session.flush() 
+        return product_image
 
 
 product_service = ProductService()

@@ -16,6 +16,7 @@ class ProductBase(Schema):
 
 class ProductSchema(ProductBase, TimestampedSchema, IDSchema):
     category: CategorySchema | None = None
+    images: list[ProductImageSchema] = Field(default_factory=list)
 
 class ProductCreate(ProductBase):
     category_id: int
@@ -29,3 +30,12 @@ class ProductUpdate(Schema):
     is_active: bool | None = None
     is_featured: bool | None = None
     category_id: int | None = None
+
+
+class ProductImageBase(Schema):
+    url: str
+    alt: str | None = None
+    sort_order: int = 0
+
+class ProductImageSchema(ProductImageBase, TimestampedSchema, IDSchema):
+    pass

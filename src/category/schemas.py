@@ -10,7 +10,7 @@ class CategoryBase(Schema):
     is_active: bool = True
     sort_order: int = 0
 
-class CategorySchema(CategoryBase, IDSchema, TimestampedSchema):
+class CategorySchema(CategoryBase, TimestampedSchema, IDSchema):
     pass
 
 class CategoryCreate(CategoryBase):

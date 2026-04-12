@@ -14,7 +14,7 @@ class ProductBase(Schema):
     is_active: bool = True
     is_featured: bool = False
 
-class ProductSchema(ProductBase, IDSchema, TimestampedSchema):
+class ProductSchema(ProductBase, TimestampedSchema, IDSchema):
     category: CategorySchema | None = None
 
 class ProductCreate(ProductBase):

@@ -5,7 +5,7 @@ from src.common.pagination import Page, PaginationQuery
 from src.database import get_db_read_session, get_db_session
 from src.exceptions import ResourceNotFound
 from src.product import service as product_service
-from src.product.schemas import ProductSchema, ProductCreate
+from src.product.schemas import ProductSchema, ProductCreate, ProductUpdate
 from src.product.service import product_service
 from src.models.product import Product
 
@@ -53,3 +53,16 @@ async def create(
     session: AsyncSession = Depends(get_db_session),
 ) -> Product:
     return await product_service.create(session, product_create)
+
+@router.put("/{id}", response_model=ProductSchema)
+async def update_product(
+    id: int,
+    product_update: ProductUpdate,
+    session: AsyncSession = Depends(get_db_session),
+) -> Product:
+    product = await product_service.get(session, id)
+
+    if product is None:
+        raise ResourceNotFound()
+    
+    return await product_service.update(session, product, product_update)

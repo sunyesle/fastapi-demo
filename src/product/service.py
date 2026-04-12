@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from src.common.pagination import Pagination
 from src.exceptions import CustomRequestValidationError
 from src.models import Product
-from src.product.schemas import ProductCreate
+from src.product.schemas import ProductCreate, ProductUpdate
 
 
 class ProductService:
@@ -89,6 +89,20 @@ class ProductService:
         statement = select(Product).where(Product.slug == slug)
         result = await session.execute(statement)
         return result.scalar_one_or_none() is not None
+
+    async def update(
+            self,
+            session: AsyncSession,
+            product: Product,
+            update_schema: ProductUpdate,
+    ) -> Product:
+        update_data = update_schema.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(product, key, value)
+
+        session.add(product)
+        await session.flush()
+        return product
 
 
 product_service = ProductService()

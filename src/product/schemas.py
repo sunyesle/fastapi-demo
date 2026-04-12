@@ -19,3 +19,13 @@ class ProductSchema(ProductBase, TimestampedSchema, IDSchema):
 
 class ProductCreate(ProductBase):
     category_id: int
+
+class ProductUpdate(Schema):
+    name: str | None = Field(default=None, max_length=200)
+    description: str | None = None
+    price: int | None = Field(default=None, ge=0)
+    original_price: int | None = None
+    stock: int | None = Field(default=None, ge=0)
+    is_active: bool | None = None
+    is_featured: bool | None = None
+    category_id: int | None = None

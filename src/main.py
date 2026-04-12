@@ -2,10 +2,11 @@ import contextlib
 from typing import AsyncIterator, TypedDict
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine as _create_async_engine
 
-from src.common.models import Model
 from src.api import router
+from src.config import settings
 from src.database import create_engine, create_sessionmaker, init_db
 from src.exeption_handlers import add_exception_handlers
 
@@ -38,6 +39,8 @@ def create_app() -> FastAPI:
     )
 
     add_exception_handlers(app)
+
+    app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
     app.include_router(router)
 

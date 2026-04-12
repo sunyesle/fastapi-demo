@@ -33,6 +33,9 @@ class CustomException(Exception):
         cls._schema = model
         return cls._schema
 
+class BadRequest(CustomException):
+    def __init__(self, message: str = "Bad request", status_code = 400) -> None:
+        super().__init__(message, status_code)
 
 class ResourceNotFound(CustomException):
     def __init__(self, message: str = "Not found", status_code = 404) -> None:

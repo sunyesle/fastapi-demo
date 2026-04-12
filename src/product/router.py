@@ -66,3 +66,15 @@ async def update_product(
         raise ResourceNotFound()
     
     return await product_service.update(session, product, product_update)
+
+@router.delete("/{id}", status_code=204)
+async def delete_product(
+    id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    product = await product_service.get(session, id)
+
+    if product is None:
+        raise ResourceNotFound()
+    
+    await product_service.delete(session, product)

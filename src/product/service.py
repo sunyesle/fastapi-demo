@@ -104,5 +104,14 @@ class ProductService:
         await session.flush()
         return product
 
+    async def delete(
+            self,
+            session: AsyncSession,
+            product: Product,
+    ) -> Product:
+        await session.delete(product)
+        await session.flush()
+        return product
+
 
 product_service = ProductService()

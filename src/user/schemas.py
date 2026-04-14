@@ -20,3 +20,7 @@ class UserCreate(Schema):
     password: str
     name: str
     phone: str | None = None
+
+class UserUpdate(Schema):
+    name: str | None = None
+    phone: str | None = None

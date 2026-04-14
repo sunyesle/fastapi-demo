@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.pagination import Page, PaginationQuery
 from src.exceptions import ResourceNotFound
-from src.user.schemas import UserCreate, UserSchema
+from src.user.schemas import UserCreate, UserSchema, UserUpdate
 from src.user.service import user_service
 from src.database import get_db_read_session, get_db_session
 from src.models.user import User
@@ -44,3 +44,18 @@ async def create(
     session: AsyncSession = Depends(get_db_session),
 ) -> User:
     return await user_service.create(session, user_create)
+
+@router.put("/{id}", response_model=UserSchema)
+async def update(
+    id: int,
+    user_update: UserUpdate,
+    session: AsyncSession = Depends(get_db_session),
+) -> User:
+    user = await user_service.get(session, id)
+
+    if user is None:
+        raise ResourceNotFound()
+    
+    await user_service.update(session, user, user_update)
+
+    return user

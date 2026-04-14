@@ -34,6 +34,13 @@ class UserService:
 
         return results, count
 
+    async def get(
+        self,
+        session: AsyncSession,
+        id: int,
+    ) -> User | None:
+        return await session.get(User, id)
+
     async def create(
         self,
         session: AsyncSession,

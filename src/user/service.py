@@ -1,6 +1,9 @@
-from sqlalchemy import select
+from typing import Sequence
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.common.pagination import Pagination
 from src.common.password import get_password_hash
 from src.user.schemas import UserCreate
 from src.exceptions import CustomRequestValidationError
@@ -8,6 +11,28 @@ from src.models.user import User
 
 
 class UserService:
+
+    async def list(
+        self,
+        session: AsyncSession,
+        active_only: bool,
+        pagination: Pagination,
+    ) -> tuple[Sequence[User], int]:
+        statement = select(User)
+
+        if active_only:
+            statement = statement.where(User.is_active == True)
+
+        count_statement = select(func.count()).select_from(statement.subquery())
+        count_result = await session.execute(count_statement)
+        count = count_result.scalar_one()
+
+        offset = (pagination.page - 1) * pagination.size
+        statement = statement.offset(offset).limit(pagination.size)
+        result = await session.execute(statement)
+        results = result.scalars().all()
+
+        return results, count
 
     async def create(
         self,

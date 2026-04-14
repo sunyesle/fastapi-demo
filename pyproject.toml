@@ -8,6 +8,7 @@ dependencies = [
     "aiosqlite>=0.22.1",
     "fastapi[standard]>=0.135.2",
     "pillow>=12.2.0",
+    "pwdlib[argon2]>=0.3.0",
     "sqlalchemy>=2.0.48",
 ]
 

@@ -88,4 +88,14 @@ class UserService:
         await session.flush()
         return user
 
+    async def delete(
+        self,
+        session: AsyncSession,
+        user: User,
+    ) -> User:
+        await session.delete(user)
+        await session.flush()
+        return user
+
+
 user_service = UserService()

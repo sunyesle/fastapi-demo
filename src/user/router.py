@@ -59,3 +59,15 @@ async def update(
     await user_service.update(session, user, user_update)
 
     return user
+
+@router.delete("/{id}", status_code=204)
+async def delete(
+    id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    user = await user_service.get(session, id)
+
+    if user is None:
+        raise ResourceNotFound()
+    
+    await user_service.delete(session, user)

@@ -7,7 +7,7 @@ from src.common.pagination import Pagination
 from src.common.password import get_password_hash
 from src.user.schemas import UserCreate, UserUpdate
 from src.exceptions import CustomRequestValidationError
-from src.models.user import User
+from src.models import User
 
 
 class UserService:

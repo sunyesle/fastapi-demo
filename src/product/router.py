@@ -8,7 +8,7 @@ from src.exceptions import ResourceNotFound
 from src.product import service as product_service
 from src.product.schemas import ProductImageSchema, ProductSchema, ProductCreate, ProductUpdate
 from src.product.service import product_service
-from src.models.product import Product, ProductImage
+from src.models import Product, ProductImage
 
 
 router = APIRouter(prefix="/products", tags=["products"])

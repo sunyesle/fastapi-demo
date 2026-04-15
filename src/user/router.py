@@ -6,7 +6,7 @@ from src.exceptions import ResourceNotFound
 from src.user.schemas import UserCreate, UserSchema, UserUpdate
 from src.user.service import user_service
 from src.database import get_db_read_session, get_db_session
-from src.models.user import User
+from src.models import User
 
 
 router = APIRouter(prefix="/users", tags=["users"])

@@ -6,8 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from src.common.pagination import Pagination
 from src.exceptions import CustomRequestValidationError
-from src.models import Product
-from src.models.product import ProductImage
+from src.models import Product, ProductImage
 from src.product.schemas import ProductCreate, ProductUpdate
 
 

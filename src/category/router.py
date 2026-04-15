@@ -6,7 +6,7 @@ from src.category.service import category_service
 from src.common.pagination import Page, PaginationQuery
 from src.database import get_db_read_session, get_db_session
 from src.exceptions import ResourceNotFound
-from src.models.category import Category
+from src.models import Category
 
 
 router = APIRouter(prefix="/categories", tags=["categories"])

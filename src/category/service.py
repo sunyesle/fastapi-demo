@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.category.schemas import CategoryCreate, CategoryUpdate
 from src.common.pagination import Pagination
 from src.exceptions import CustomRequestValidationError
-from src.models.category import Category
+from src.models import Category
 
 
 class CategoryService:

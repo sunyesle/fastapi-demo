@@ -13,10 +13,12 @@ class CustomException(Exception):
             self,
             message: str,
             status_code: int = 500,
+            headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.message = message
         self.status_code = status_code
+        self.headers = headers
 
     @classmethod
     def schema(cls) -> type[BaseModel]:
@@ -39,6 +41,20 @@ class BadRequest(CustomException):
 
 class ResourceNotFound(CustomException):
     def __init__(self, message: str = "Not found", status_code = 404) -> None:
+        super().__init__(message, status_code)
+
+class Unauthorized(CustomException):
+    def __init__(self, message: str = "Unauthorized", status_code = 401) -> None:
+        super().__init__(
+            message,
+            status_code,
+            headers={
+                "WWW-Authenticate": "Bearer"
+            }
+        )
+
+class Forbidden(CustomException):
+    def __init__(self, message: str = "Forbidden", status_code = 403) -> None:
         super().__init__(message, status_code)
 
 

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.pagination import Pagination
 from src.common.password import get_password_hash
+from src.common.utils import utc_now
 from src.user.schemas import UserCreate, UserUpdate
 from src.exceptions import CustomRequestValidationError
 from src.models import User
@@ -94,6 +95,26 @@ class UserService:
         user: User,
     ) -> User:
         await session.delete(user)
+        await session.flush()
+        return user
+
+    async def get_by_username(
+        self,
+        session: AsyncSession,
+        username: str,
+    ) -> User | None:
+        statement = select(User).where(User.username == username)
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
+
+    async def update_last_login(
+        self,
+        session: AsyncSession,
+        user: User,
+    ) -> User:
+        user.last_login_at = utc_now()
+
+        session.add(user)
         await session.flush()
         return user
 

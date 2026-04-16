@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.dependencies import get_current_user
 from src.common.pagination import Page, PaginationQuery
 from src.exceptions import ResourceNotFound
 from src.user.schemas import UserCreate, UserSchema, UserUpdate
@@ -11,6 +12,18 @@ from src.models import User
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+
+@router.get("/me", response_model=UserSchema)
+async def me(
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_read_session),
+) -> User:
+    user = await user_service.get_by_username(session, current_user.username)
+
+    if user is None:
+        raise ResourceNotFound()
+
+    return user
 
 @router.get("/", response_model=Page[UserSchema])
 async def list(

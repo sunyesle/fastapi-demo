@@ -2,9 +2,10 @@ from typing import Annotated
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
+from src.auth.schemas import Token
 from src.auth.service import auth_service
 from src.common import jwt
 from src.config import settings
@@ -18,8 +19,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: AsyncSession = Depends(get_db_session)
-):
+) -> Token:
     user = await auth_service.authenticate(session, form_data.username, form_data.password)
 
     access_token = jwt.encode(data={"sub": user.username}, secret=settings.SECRET_KEY)
-    return {"access_token": access_token, "token_type": "bearer"}
+    return Token(access_token=access_token, token_type="bearer")

@@ -13,31 +13,34 @@ from src.models import User
 from src.user.service import user_service
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
-async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+async def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_db_read_session),
-) -> User:
-    
+) -> User | None:
+
     if not token:
-        raise Unauthorized()
+        return None
 
     try:
         payload = jwt.decode(token=token, secret=settings.SECRET_KEY)
         username = payload.get("sub")
 
         if username is None:
-            raise Unauthorized()
-        
-        token_data = TokenData(username=username)
-        
-    except InvalidTokenError:
-        raise Unauthorized()
-    
-    user = await user_service.get_by_username(session, username=token_data.username)
+            return None
 
-    if user is None:
-        raise Unauthorized()
-    
+        token_data = TokenData(username=username)
+
+    except InvalidTokenError:
+        return None
+
+    user = await user_service.get_by_username(session, username=token_data.username)
     return user
+
+async def get_current_user(
+    current_user: User | None = Depends(get_current_user_optional),
+) -> User:
+    if current_user is None:
+        raise Unauthorized()
+    return current_user

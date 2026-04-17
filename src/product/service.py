@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.common.pagination import Pagination
-from src.exceptions import CustomRequestValidationError
+from src.exceptions import BadRequest, CustomRequestValidationError, ResourceNotFound
 from src.models import Product, ProductImage
 from src.product.schemas import ProductCreate, ProductUpdate
 
@@ -145,5 +145,14 @@ class ProductService:
         await session.flush()
         return product_image
 
+    def validate_product_availability(
+            self,
+            requested_quantity: int,
+            product: Product | None = None,
+    ) -> None:
+        if not product or not product.is_active:
+            raise ResourceNotFound()
+        if product.stock < requested_quantity:
+            raise BadRequest("Insufficient stock.")
 
 product_service = ProductService()

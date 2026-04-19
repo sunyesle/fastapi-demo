@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.cart.schemas import CartItemUpdate
 from src.exceptions import BadRequest
 from src.models import Cart, CartItem
 from src.product.service import product_service
@@ -72,6 +73,25 @@ class CartService:
 
         cart.set_modified_at()
         session.add(cart)
+
+        await session.flush()
+        return cart
+
+    async def update_item(
+        self,
+        session: AsyncSession,
+        cart: Cart,
+        item: CartItem,
+        update_schema: CartItemUpdate,
+    ) -> Cart:
+        if update_schema.quantity is not None:
+            product_service.validate_product_availability(
+                product=item.product,
+                requested_quantity=update_schema.quantity
+            )
+            item.quantity = update_schema.quantity
+
+            cart.set_modified_at()
 
         await session.flush()
         return cart

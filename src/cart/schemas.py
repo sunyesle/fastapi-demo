@@ -23,6 +23,9 @@ class CartItemAdd(Schema):
     product_id: int
     quantity: int = Field(default=1, ge=1)
 
+class CartItemUpdate:
+    quantity: int | None = Field(ge=1)
+
 
 class ProductSimpleSchema(Schema):
     name: str

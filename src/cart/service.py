@@ -96,5 +96,18 @@ class CartService:
         await session.flush()
         return cart
 
+    async def delete_item(
+        self,
+        session: AsyncSession,
+        cart: Cart,
+        item: CartItem,
+    ) -> Cart:
+        await session.delete(item)
+
+        cart.set_modified_at()
+
+        await session.flush()
+        return cart
+
 
 cart_service = CartService()

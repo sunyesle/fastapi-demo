@@ -46,3 +46,20 @@ async def update_item(
         item=item,
         update_schema=data
     )
+
+@router.delete("/items/{item_id}", status_code=204)
+async def delete_item(
+    item_id: int,
+    cart: Cart = Depends(get_current_cart),
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    # 아이템 존재 여부 확인
+    item = next((i for i in cart.items if i.id == item_id), None)
+    if not item:
+        raise ResourceNotFound()
+    
+    await cart_service.delete_item(
+        session, 
+        cart=cart, 
+        item=item,
+    )

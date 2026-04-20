@@ -23,7 +23,7 @@ class CartItemAdd(Schema):
     product_id: int
     quantity: int = Field(default=1, ge=1)
 
-class CartItemUpdate:
+class CartItemUpdate(Schema):
     quantity: int | None = Field(ge=1)
 
 

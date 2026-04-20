@@ -109,5 +109,36 @@ class CartService:
         await session.flush()
         return cart
 
+    async def merge_carts(
+        self,
+        session: AsyncSession,
+        user_cart: Cart,
+        guest_cart: Cart,
+    ) -> None:
+        for guest_item in guest_cart.items:
+            user_item = None
+
+            # 회원 장바구니에 동일한 상품이 담겨 있는지 확인
+            for item in user_cart.items:
+                if item.product_id == guest_item.product_id:
+                    user_item = item
+                    break
+
+            if user_item:
+                # 동일 상품이 있다면: 수량 합산
+                user_item.quantity += guest_item.quantity
+                session.add(user_item)
+            else:
+                # 동일 상품이 없다면: 아이템 생성
+                new_item = CartItem(
+                    cart_id=user_cart.id,
+                    product_id=guest_item.product_id,
+                    quantity=guest_item.quantity
+                )
+                session.add(new_item)
+
+        # 비회원 장바구니 삭제
+        await session.delete(guest_cart)
+
 
 cart_service = CartService()

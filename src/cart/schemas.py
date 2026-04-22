@@ -29,4 +29,7 @@ class CartItemUpdate(Schema):
 
 class ProductSimpleSchema(Schema):
     name: str
+    slug: str
     price: int
+    original_price: int | None = None
+    stock: int

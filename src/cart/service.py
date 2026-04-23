@@ -5,9 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.cart.schemas import CartItemUpdate
-from src.exceptions import BadRequest
+from src.exceptions import BadRequest, CustomException
 from src.models import Cart, CartItem
 from src.product.service import product_service
+
+
+class CartValidationError(CustomException):    
+    def __init__(self, errors: list[dict], message: str = "Bad request", status_code = 400) -> None:
+        super().__init__(message, status_code, errors=errors)
+
 
 class CartService:
 
@@ -139,6 +145,40 @@ class CartService:
 
         # 비회원 장바구니 삭제
         await session.delete(guest_cart)
+
+    async def validate_cart(
+        self,
+        session: AsyncSession,
+        cart: Cart
+    ) -> None:
+        errors = []
+
+        for item in cart.items:
+            product = await product_service.get(session, item.product_id)
+
+            if not product:
+                errors.append({
+                    "item_id": item.id,
+                    "message": f"'{item.product.name}' is no longer available."
+                })
+                continue
+
+            if not product.is_active:
+                errors.append({
+                    "item_id": item.id,
+                    "message": f"'{product.name}' is currently unavailable."
+                })
+                
+                continue
+
+            if product.stock < item.quantity:
+                errors.append({
+                    "item_id": item.id,
+                    "message": f"'{product.name}' has insufficient stock. (Available: {product.stock})"
+                })
+
+        if errors:
+            raise CartValidationError(message="Invalid items found in your cart.", errors=errors)
 
 
 cart_service = CartService()

@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -7,9 +9,17 @@ from src.exceptions import CustomException, CustomRequestValidationError
 
 
 def custom_exception_handler(request: Request, exc: CustomException) -> JSONResponse:
+    content: dict[str, Any] = {
+        "error": type(exc).__name__,
+        "detail": exc.message,
+    }
+    if exc.errors:
+        content["errors"] = exc.errors
+
     return JSONResponse(
         status_code=exc.status_code,
-        content={"error": type(exc).__name__, "detail": exc.message},
+        content=content,
+        headers=exc.headers,
     )
 
 async def request_validation_exception_handler(

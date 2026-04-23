@@ -63,3 +63,10 @@ async def delete_item(
         cart=cart, 
         item=item,
     )
+
+@router.post("/validate")
+async def validate(
+    cart: Cart = Depends(get_current_cart),
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    await cart_service.validate_cart(session, cart)

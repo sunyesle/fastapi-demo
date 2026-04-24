@@ -1,17 +1,15 @@
-from typing import Sequence
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.cart.schemas import CartItemUpdate
-from src.exceptions import BadRequest, CustomException
-from src.models import Cart, CartItem
+from src.exceptions import BadRequest, CustomException, ResourceNotFound
+from src.models import Cart, CartItem, Product
 from src.product.service import product_service
 
 
 class CartValidationError(CustomException):    
-    def __init__(self, errors: list[dict], message: str = "Bad request", status_code = 400) -> None:
+    def __init__(self, errors: list[dict], message: str = "Cart validation failed", status_code = 400) -> None:
         super().__init__(message, status_code, errors=errors)
 
 
@@ -61,9 +59,10 @@ class CartService:
 
         # 상품 검증
         product = item.product if item else await product_service.get(session, product_id)
-        product_service.validate_product_availability(
+        self._validate_cart_item(
             product=product,
             requested_quantity=target_quantity,
+            product_id=product_id,
         )
 
         # 상태 반영
@@ -87,16 +86,22 @@ class CartService:
         self,
         session: AsyncSession,
         cart: Cart,
-        item: CartItem,
+        item_id: int,
         update_schema: CartItemUpdate,
     ) -> Cart:
-        if update_schema.quantity is not None:
-            product_service.validate_product_availability(
-                product=item.product,
-                requested_quantity=update_schema.quantity
-            )
-            item.quantity = update_schema.quantity
+        # 아이템 존재 여부 확인
+        item = next((i for i in cart.items if i.id == item_id), None)
+        if not item:
+            raise ResourceNotFound()
 
+        if update_schema.quantity is not None:
+            self._validate_cart_item(
+                    product=item.product,
+                    requested_quantity=update_schema.quantity,
+                    product_id=item.product_id,
+                    item_id=item.id
+                )
+            item.quantity = update_schema.quantity
             cart.set_modified_at()
 
         await session.flush()
@@ -152,33 +157,43 @@ class CartService:
         cart: Cart
     ) -> None:
         errors = []
-
         for item in cart.items:
-            product = await product_service.get(session, item.product_id)
-
-            if not product:
-                errors.append({
-                    "item_id": item.id,
-                    "message": f"'{item.product.name}' is no longer available."
-                })
-                continue
-
-            if not product.is_active:
-                errors.append({
-                    "item_id": item.id,
-                    "message": f"'{product.name}' is currently unavailable."
-                })
-                
-                continue
-
-            if product.stock < item.quantity:
-                errors.append({
-                    "item_id": item.id,
-                    "message": f"'{product.name}' has insufficient stock. (Available: {product.stock})"
-                })
+            try:
+                self._validate_cart_item(
+                    product=item.product,
+                    requested_quantity=item.quantity,
+                    product_id=item.product_id,
+                    item_id=item.id
+                )
+            except CartValidationError as e:
+                if e.errors:
+                    errors.extend(e.errors)
 
         if errors:
-            raise CartValidationError(message="Invalid items found in your cart.", errors=errors)
+            raise CartValidationError(
+                errors=errors
+            )
+    
+    def _validate_cart_item(
+        self,
+        product: Product | None,
+        requested_quantity: int,
+        product_id: int,
+        item_id: int | None = None,
+    ) -> None:
+        msg = None
+
+        if not product:
+            msg = f"This product is no longer available."
+        elif not product.is_active:
+            msg = f"'{product.name}' is currently unavailable."
+        elif product.stock < requested_quantity:
+            msg = f"'{product.name}' has insufficient stock. (Available: {product.stock})"
+
+        if msg:
+            raise CartValidationError(
+                errors=[{"item_id": item_id, "product_id": product_id, "message": msg}]
+            )
 
 
 cart_service = CartService()

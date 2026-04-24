@@ -34,16 +34,11 @@ async def update_item(
     cart: Cart = Depends(get_current_cart),
     session: AsyncSession = Depends(get_db_session),
 ) -> Cart:
-    # 아이템 존재 여부 확인
-    item = next((i for i in cart.items if i.id == item_id), None)
-    if not item:
-        raise ResourceNotFound()
-
     # 수량 업데이트
     return await cart_service.update_item(
-        session, 
-        cart=cart, 
-        item=item,
+        session,
+        cart=cart,
+        item_id=item_id,
         update_schema=data
     )
 
@@ -57,10 +52,10 @@ async def delete_item(
     item = next((i for i in cart.items if i.id == item_id), None)
     if not item:
         raise ResourceNotFound()
-    
+
     await cart_service.delete_item(
-        session, 
-        cart=cart, 
+        session,
+        cart=cart,
         item=item,
     )
 

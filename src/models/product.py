@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class Product(RecordModel):
     __tablename__ = "products"
-    
+
     name: Mapped[str] = mapped_column(String)
     slug: Mapped[str] = mapped_column(String, unique=True, index=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)

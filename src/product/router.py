@@ -39,13 +39,13 @@ async def list(
 @router.get("/{id}", response_model=ProductSchema)
 async def get(
     id: int,
-    session: AsyncSession = Depends(get_db_read_session),             
+    session: AsyncSession = Depends(get_db_read_session),
 ) -> Product:
     product = await product_service.get(session, id)
-    
+
     if product is None:
         raise ResourceNotFound()
-    
+
     return product
 
 @router.post("/", response_model=ProductSchema, status_code=201)
@@ -65,7 +65,7 @@ async def update_product(
 
     if product is None:
         raise ResourceNotFound()
-    
+
     return await product_service.update(session, product, product_update)
 
 @router.delete("/{id}", status_code=204)
@@ -77,7 +77,7 @@ async def delete_product(
 
     if product is None:
         raise ResourceNotFound()
-    
+
     await product_service.delete(session, product)
 
 @router.post("/{id}/images", response_model=ProductImageSchema, status_code=201)
@@ -90,7 +90,7 @@ async def save_product_image(
 
     if product is None:
         raise ResourceNotFound()
-    
+
     url = await save_image(image, folder="products")
 
     product_image = await product_service.add_image(session, product, url)
@@ -107,7 +107,7 @@ async def delete_product_image(
 
     if image is None or image.product_id != id:
         raise ResourceNotFound()
-    
+
     delete_image(image.url)
 
     await product_service.delete_image(session, image)

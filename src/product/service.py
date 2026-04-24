@@ -131,7 +131,7 @@ class ProductService:
             url=url,
             sort_order=len(product.images)
         )
-        
+
         session.add(product_image)
         await session.flush()
         return product_image

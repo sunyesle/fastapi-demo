@@ -19,7 +19,7 @@ async def get_current_cart(
     # 회원
     if user:
         return await cart_service.get_or_create(session, user_id=user.id)
-    
+
     # 비회원
     session_id = get_cart_session_id(request)
     if session_id is None:

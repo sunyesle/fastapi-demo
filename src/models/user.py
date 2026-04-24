@@ -9,7 +9,7 @@ from src.enums import UserRole
 
 class User(RecordModel):
     __tablename__ = "users"
-    
+
     username: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
     name: Mapped[str] = mapped_column(String)

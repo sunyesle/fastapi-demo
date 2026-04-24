@@ -11,7 +11,7 @@ def get_cart_session_id(request: Request) -> str | None:
 def set_cart_session_cookie(
     response: Response,
     session_id: str
-) -> None:    
+) -> None:
     response.set_cookie(
         key=CART_SESSION_COOKIE,
         value=session_id,

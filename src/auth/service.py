@@ -15,16 +15,16 @@ class AuthService:
         password: str
     ) -> User:
         user = await user_service.get_by_username(session, username)
-        
+
         if user is None:
             raise Unauthorized()
-        
+
         if not verify_password(password, user.hashed_password):
             raise Unauthorized()
-        
+
         if not user.is_active:
             raise Forbidden("Inactive user")
-        
+
         await user_service.update_last_login(session, user)
 
         return user

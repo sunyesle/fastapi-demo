@@ -68,7 +68,7 @@ async def update(
 
     if user is None:
         raise ResourceNotFound()
-    
+
     await user_service.update(session, user, user_update)
 
     return user
@@ -82,5 +82,5 @@ async def delete(
 
     if user is None:
         raise ResourceNotFound()
-    
+
     await user_service.delete(session, user)

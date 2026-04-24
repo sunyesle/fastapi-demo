@@ -58,7 +58,7 @@ class UserService:
                     }
                 ]
             )
-        
+
         hashed_password = get_password_hash(create_schema.password)
 
         user = User(**create_schema.model_dump(exclude={"password"}), hashed_password=hashed_password)

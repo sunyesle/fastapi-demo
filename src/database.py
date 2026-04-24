@@ -35,7 +35,7 @@ async def init_db(engine: AsyncEngine):
 async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession]:
     # lifespan에서 저장한 sessionmaker를 사용
     sessionmaker = request.state.sessionmaker
-    
+
     async with sessionmaker() as session:
         try:
             yield session

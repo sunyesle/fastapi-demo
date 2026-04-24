@@ -8,7 +8,7 @@ from src.models import Cart, CartItem, Product
 from src.product.service import product_service
 
 
-class CartValidationError(CustomException):    
+class CartValidationError(CustomException):
     def __init__(self, errors: list[dict], message: str = "Cart validation failed", status_code = 400) -> None:
         super().__init__(message, status_code, errors=errors)
 
@@ -173,7 +173,7 @@ class CartService:
             raise CartValidationError(
                 errors=errors
             )
-    
+
     def _validate_cart_item(
         self,
         product: Product | None,

@@ -21,6 +21,6 @@ class CartItem(RecordModel):
     cart_id: Mapped[int] = mapped_column(Integer, ForeignKey("carts.id"))
     product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"))
     quantity: Mapped[int] = mapped_column(default=1)
-    
+
     cart: Mapped["Cart"] = relationship(back_populates="items")
     product: Mapped["Product"] = relationship()

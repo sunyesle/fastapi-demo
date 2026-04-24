@@ -35,7 +35,7 @@ async def get(
 
     if category is None:
         raise ResourceNotFound()
-    
+
     return category
 
 @router.post("/", response_model=CategorySchema, status_code=201)
@@ -55,7 +55,7 @@ async def update(
 
     if category is None:
         raise ResourceNotFound()
-    
+
     await category_service.update(session, category, category_update)
 
     return category
@@ -69,5 +69,5 @@ async def delete(
 
     if category is None:
         raise ResourceNotFound()
-    
+
     await category_service.delete(session, category)

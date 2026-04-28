@@ -18,7 +18,7 @@ async def me(
 ) -> Cart:
     return cart
 
-@router.post("/items", response_model=CartSchema, status_code=201)
+@router.post("/me/items", response_model=CartSchema, status_code=201)
 async def add_item(
     data: CartItemAdd,
     cart: Cart = Depends(get_current_cart),
@@ -27,7 +27,7 @@ async def add_item(
     await cart_service.add_item(session, cart, data.product_id, data.quantity)
     return cart
 
-@router.put("/items/{item_id}", response_model=CartSchema)
+@router.put("/me/items/{item_id}", response_model=CartSchema)
 async def update_item(
     item_id: int,
     data: CartItemUpdate,
@@ -42,7 +42,7 @@ async def update_item(
         update_schema=data
     )
 
-@router.delete("/items/{item_id}", status_code=204)
+@router.delete("/me/items/{item_id}", status_code=204)
 async def delete_item(
     item_id: int,
     cart: Cart = Depends(get_current_cart),
@@ -59,7 +59,7 @@ async def delete_item(
         item=item,
     )
 
-@router.post("/validate")
+@router.post("/me/validate")
 async def validate(
     cart: Cart = Depends(get_current_cart),
     session: AsyncSession = Depends(get_db_session),

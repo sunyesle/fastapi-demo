@@ -7,7 +7,7 @@ from src.common.pagination import Pagination
 from src.common.password import get_password_hash
 from src.common.utils import utc_now
 from src.user.schemas import UserCreate, UserUpdate
-from src.exceptions import CustomRequestValidationError
+from src.exceptions import CustomRequestValidationError, ResourceNotFound
 from src.models import User
 
 
@@ -35,12 +35,24 @@ class UserService:
 
         return results, count
 
-    async def get(
+    async def get_or_none(
         self,
         session: AsyncSession,
         id: int,
     ) -> User | None:
         return await session.get(User, id)
+
+    async def get(
+        self,
+        session: AsyncSession,
+        id: int,
+    ) -> User:
+        user = await self.get_or_none(session, id)
+
+        if user is None:
+            raise ResourceNotFound()
+
+        return user
 
     async def create(
         self,
@@ -78,9 +90,11 @@ class UserService:
     async def update(
         self,
         session: AsyncSession,
-        user: User,
+        user_id: int,
         update_schema: UserUpdate,
     ) -> User:
+        user = await self.get(session, user_id)
+
         update_data = update_schema.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(user, key, value)
@@ -92,8 +106,10 @@ class UserService:
     async def delete(
         self,
         session: AsyncSession,
-        user: User,
+        user_id: int,
     ) -> User:
+        user = await self.get(session, user_id)
+
         await session.delete(user)
         await session.flush()
         return user

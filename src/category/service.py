@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.category.schemas import CategoryCreate, CategoryUpdate
 from src.common.pagination import Pagination
-from src.exceptions import CustomRequestValidationError
+from src.exceptions import CustomRequestValidationError, ResourceNotFound
 from src.models import Category
 
 
@@ -33,12 +33,24 @@ class CategoryService:
 
         return results, count
 
-    async def get(
+    async def get_or_none(
         self,
         session: AsyncSession,
         id: int,
     ) -> Category | None:
         return await session.get(Category, id)
+    
+    async def get(
+        self,
+        session: AsyncSession,
+        id: int,
+    ) -> Category:
+        category = await self.get_or_none(session, id)
+        
+        if category is None:
+            raise ResourceNotFound()
+        
+        return category
 
     async def create(
         self,
@@ -74,9 +86,11 @@ class CategoryService:
     async def update(
         self,
         session: AsyncSession,
-        category: Category,
+        id: int,
         update_schema: CategoryUpdate,
     ) -> Category:
+        category = await self.get(session, id)
+
         update_data = update_schema.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(category, key, value)
@@ -88,8 +102,10 @@ class CategoryService:
     async def delete(
         self,
         session: AsyncSession,
-        category: Category,
+        id: int,
     ) -> Category:
+        category = await self.get(session, id)
+
         await session.delete(category)
         await session.flush()
         return category

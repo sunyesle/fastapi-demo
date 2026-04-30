@@ -49,17 +49,17 @@ async def create(
 ) -> User:
     return await user_service.create(session, user_create)
 
-@router.put("/{user_id}", response_model=UserSchema)
+@router.put("/me", response_model=UserSchema)
 async def update(
-    user_id: int,
     user_update: UserUpdate,
+    user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> User:
-    return await user_service.update(session, user_id, user_update)
+    return await user_service.update(session, user.id, user_update)
 
-@router.delete("/{user_id}", status_code=204)
+@router.delete("/me", status_code=204)
 async def delete(
-    user_id: int,
+    user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
-    await user_service.delete(session, user_id)
+    await user_service.delete(session, user.id)

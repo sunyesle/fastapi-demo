@@ -44,7 +44,7 @@ class ProductService:
 
         return results, count
 
-    async def get(
+    async def get_or_none(
         self,
         session: AsyncSession,
         id: int,
@@ -57,6 +57,18 @@ class ProductService:
         )
         result = await session.execute(statement)
         return result.scalar_one_or_none()
+
+    async def get(
+        self,
+        session: AsyncSession,
+        id: int,
+    ) -> Product:
+        product = await self.get_or_none(session, id)
+
+        if product is None:
+            raise ResourceNotFound()
+        
+        return product
 
     async def create(
         self,
@@ -75,7 +87,6 @@ class ProductService:
                 ]
             )
 
-        product = Product(**create_schema.model_dump())
         product = Product(**create_schema.model_dump(), images=[])
         session.add(product)
         await session.flush()
@@ -92,24 +103,29 @@ class ProductService:
         return result.scalar_one_or_none() is not None
 
     async def update(
-            self,
-            session: AsyncSession,
-            product: Product,
-            update_schema: ProductUpdate,
+        self,
+        session: AsyncSession,
+        id: int,
+        update_schema: ProductUpdate,
     ) -> Product:
+        product = await self.get(session, id)
+
         update_data = update_schema.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(product, key, value)
 
         session.add(product)
         await session.flush()
+        await session.refresh(product)
         return product
 
     async def delete(
-            self,
-            session: AsyncSession,
-            product: Product,
+        self,
+        session: AsyncSession,
+        id: int,
     ) -> Product:
+        product = await self.get(session, id)
+
         await session.delete(product)
         await session.flush()
         return product
@@ -117,20 +133,32 @@ class ProductService:
     async def get_image(
         self,
         session: AsyncSession,
+        product_id: int,
         image_id: int,
-    ) -> ProductImage | None:
-        return await session.get(ProductImage, image_id)
+    ) -> ProductImage:
+        statement = select(ProductImage).where(
+            ProductImage.id == image_id,
+            ProductImage.product_id == product_id,
+        )
+        result = await session.execute(statement)
+        image = result.scalar_one_or_none()
+
+        if image is None:
+            raise ResourceNotFound()
+        
+        return image
 
     async def add_image(
         self,
         session: AsyncSession,
-        product: Product,
+        product_id: int,
+        sort_order: int,
         url: str,
     ) -> ProductImage:
         product_image = ProductImage(
-            product_id=product.id,
+            product_id=product_id,
             url=url,
-            sort_order=len(product.images)
+            sort_order=sort_order
         )
 
         session.add(product_image)
@@ -140,11 +168,14 @@ class ProductService:
     async def delete_image(
         self,
         session: AsyncSession,
-        product_image: ProductImage,
-    ) -> ProductImage:
-        await session.delete(product_image)
+        product_id: int,
+        image_id: int,
+    ) -> ProductImage:        
+        image = await product_service.get_image(session, product_id, image_id)
+
+        await session.delete(image)
         await session.flush()
-        return product_image
+        return image
 
     def validate_product_availability(
             self,
@@ -155,5 +186,6 @@ class ProductService:
             raise ResourceNotFound()
         if product.stock < requested_quantity:
             raise BadRequest("Insufficient stock.")
+
 
 product_service = ProductService()

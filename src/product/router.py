@@ -36,12 +36,12 @@ async def list(
         pagination
     )
 
-@router.get("/{id}", response_model=ProductSchema)
+@router.get("/{product_id}", response_model=ProductSchema)
 async def get(
-    id: int,
+    product_id: int,
     session: AsyncSession = Depends(get_db_read_session),
 ) -> Product:
-    product = await product_service.get(session, id)
+    product = await product_service.get(session, product_id)
 
     if product is None:
         raise ResourceNotFound()
@@ -55,59 +55,43 @@ async def create(
 ) -> Product:
     return await product_service.create(session, product_create)
 
-@router.put("/{id}", response_model=ProductSchema)
+@router.put("/{product_id}", response_model=ProductSchema)
 async def update_product(
-    id: int,
+    product_id: int,
     product_update: ProductUpdate,
     session: AsyncSession = Depends(get_db_session),
 ) -> Product:
-    product = await product_service.get(session, id)
+    return await product_service.update(session, product_id, product_update)
 
-    if product is None:
-        raise ResourceNotFound()
-
-    return await product_service.update(session, product, product_update)
-
-@router.delete("/{id}", status_code=204)
+@router.delete("/{product_id}", status_code=204)
 async def delete_product(
-    id: int,
+    product_id: int,
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
-    product = await product_service.get(session, id)
+    await product_service.delete(session, product_id)
 
-    if product is None:
-        raise ResourceNotFound()
-
-    await product_service.delete(session, product)
-
-@router.post("/{id}/images", response_model=ProductImageSchema, status_code=201)
+@router.post("/{product_id}/images", response_model=ProductImageSchema, status_code=201)
 async def save_product_image(
-    id: int,
+    product_id: int,
     image: UploadFile = File(...),
     session: AsyncSession = Depends(get_db_session),
 ) -> ProductImage:
-    product = await product_service.get(session, id)
-
-    if product is None:
-        raise ResourceNotFound()
+    product = await product_service.get(session, product_id)
 
     url = await save_image(image, folder="products")
 
-    product_image = await product_service.add_image(session, product, url)
+    product_image = await product_service.add_image(session, product_id, len(product.images), url)
 
     return product_image
 
-@router.delete("/{id}/images/{image_id}", status_code=204)
+@router.delete("/{product_id}/images/{image_id}", status_code=204)
 async def delete_product_image(
-    id: int,
+    product_id: int,
     image_id: int,
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
-    image = await product_service.get_image(session, image_id)
-
-    if image is None or image.product_id != id:
-        raise ResourceNotFound()
+    image = await product_service.get_image(session, product_id, image_id)
 
     delete_image(image.url)
 
-    await product_service.delete_image(session, image)
+    await product_service.delete_image(session, product_id, image_id)

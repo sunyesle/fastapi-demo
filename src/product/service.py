@@ -76,6 +76,7 @@ class ProductService:
             )
 
         product = Product(**create_schema.model_dump())
+        product = Product(**create_schema.model_dump(), images=[])
         session.add(product)
         await session.flush()
         await session.refresh(product, ["category"])

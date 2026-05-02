@@ -44,13 +44,40 @@ class CartService:
 
         return cart
 
+    async def get_or_none(
+        self,
+        session: AsyncSession,
+        cart_id: int,
+    ) -> Cart | None:
+        statement = (
+            select(Cart)
+            .options(selectinload(Cart.items).selectinload(CartItem.product))
+            .where(Cart.id == cart_id)
+        )
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
+
+    async def get(
+        self,
+        session: AsyncSession,
+        cart_id: int,
+    ) -> Cart:
+        cart = await self.get_or_none(session, cart_id)
+
+        if cart is None:
+            raise ResourceNotFound()
+
+        return cart
+
     async def add_item(
         self,
         session: AsyncSession,
-        cart: Cart,
+        cart_id: int,
         product_id: int,
         quantity: int,
     ) -> Cart:
+        cart = await self.get(session, cart_id)
+
         # 기존 아이템 확인
         item = next((i for i in cart.items if i.product_id == product_id), None)
 
@@ -85,10 +112,12 @@ class CartService:
     async def update_item(
         self,
         session: AsyncSession,
-        cart: Cart,
+        cart_id: int,
         item_id: int,
         update_schema: CartItemUpdate,
     ) -> Cart:
+        cart = await self.get(session, cart_id)
+
         # 아이템 존재 여부 확인
         item = next((i for i in cart.items if i.id == item_id), None)
         if not item:
@@ -110,9 +139,16 @@ class CartService:
     async def delete_item(
         self,
         session: AsyncSession,
-        cart: Cart,
-        item: CartItem,
+        cart_id: int,
+        item_id: int,
     ) -> Cart:
+        cart = await self.get(session, cart_id)
+
+        # 아이템 존재 여부 확인
+        item = next((i for i in cart.items if i.id == item_id), None)
+        if not item:
+            raise ResourceNotFound()
+        
         await session.delete(item)
 
         cart.set_modified_at()
@@ -123,9 +159,12 @@ class CartService:
     async def merge_carts(
         self,
         session: AsyncSession,
-        user_cart: Cart,
-        guest_cart: Cart,
+        user_cart_id: int,
+        guest_cart_id: int,
     ) -> None:
+        user_cart = await self.get(session, user_cart_id)
+        guest_cart = await self.get(session, guest_cart_id)
+
         for guest_item in guest_cart.items:
             user_item = None
 
@@ -154,8 +193,10 @@ class CartService:
     async def validate_cart(
         self,
         session: AsyncSession,
-        cart: Cart
+        id: int,
     ) -> None:
+        cart = await self.get(session, id)
+
         errors = []
         for item in cart.items:
             try:

@@ -1,4 +1,5 @@
 from typing import Annotated
+from venv import logger
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,13 +27,15 @@ async def login_for_access_token(
     user = await auth_service.authenticate(session, form_data.username, form_data.password)
 
     guest_session_id = get_cart_session_id(request)
+    print(f"guest_id: {guest_session_id}");
     if guest_session_id:
+        print(f"guest start!:");
         try:
             guest_cart = await cart_service.get_or_create(session, session_id=guest_session_id)
             if guest_cart.items:
                 user_cart = await cart_service.get_or_create(session, user_id=user.id)
 
-                await cart_service.merge_carts(session, user_cart, guest_cart)
+                await cart_service.merge_carts(session, user_cart.id, guest_cart.id)
 
         except Exception:
             pass # 병합에 실패해도 로그인은 진행

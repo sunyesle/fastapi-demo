@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import List, Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -133,6 +133,17 @@ class UserService:
         session.add(user)
         await session.flush()
         return user
+
+    async def get_address_list(
+        self,
+        session: AsyncSession,
+        user_id: int,
+    ) -> Sequence[Address]:
+        statement = select(Address).where(
+            Address.user_id == user_id
+        )
+        result = await session.execute(statement)
+        return result.scalars().all()
 
     async def create_address(
         self,

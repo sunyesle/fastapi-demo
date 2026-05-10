@@ -1,3 +1,5 @@
+from typing import List, Sequence
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,6 +65,13 @@ async def delete(
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
     await user_service.delete(session, user.id)
+
+@router.get("/me/addresses", response_model=List[AddressSchema])
+async def get_address_list(
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> Sequence[Address]:
+    return await user_service.get_address_list(session, user.id)
 
 @router.post("/me/addresses", response_model=AddressSchema, status_code=201)
 async def create_address(

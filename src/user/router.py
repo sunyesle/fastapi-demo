@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.dependencies import get_current_user
 from src.common.pagination import Page, PaginationQuery
-from src.user.schemas import UserCreate, UserSchema, UserUpdate
+from src.user.schemas import AddressCreate, AddressSchema, UserCreate, UserSchema, UserUpdate
 from src.user.service import user_service
 from src.database import get_db_read_session, get_db_session
-from src.models import User
+from src.models import User, Address
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -63,3 +63,11 @@ async def delete(
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
     await user_service.delete(session, user.id)
+
+@router.post("/me/addresses", response_model=AddressSchema, status_code=201)
+async def create_address(
+    address_create: AddressCreate,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> Address:
+    return await user_service.create_address(session, user.id, address_create)

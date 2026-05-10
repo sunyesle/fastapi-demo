@@ -24,3 +24,25 @@ class UserCreate(Schema):
 class UserUpdate(Schema):
     name: str | None = None
     phone: str | None = None
+
+
+class AddressBase(Schema):
+    name: str
+    recipient: str
+    phone: str
+    zipcode: str
+    address1: str
+    address2: str | None
+    is_default: bool
+
+class AddressSchema(AddressBase, TimestampedSchema, IDSchema):
+    pass
+
+class AddressCreate(Schema):
+    name: str
+    recipient: str
+    phone: str
+    zipcode: str
+    address1: str
+    address2: str | None
+    is_default: bool = False

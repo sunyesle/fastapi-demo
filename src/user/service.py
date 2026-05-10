@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.common.pagination import Pagination
 from src.common.password import get_password_hash
 from src.common.utils import utc_now
-from src.user.schemas import UserCreate, UserUpdate
+from src.user.schemas import AddressCreate, UserCreate, UserUpdate
 from src.exceptions import CustomRequestValidationError, ResourceNotFound
-from src.models import User
+from src.models import User, Address
 
 
 class UserService:
@@ -133,6 +133,34 @@ class UserService:
         session.add(user)
         await session.flush()
         return user
+
+    async def create_address(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        create_schema: AddressCreate,
+    ) -> Address:
+        # 기존 주소지 조회
+        statement = select(Address).where(
+            Address.user_id == user_id
+        )
+        result = await session.execute(statement)
+        addresses = result.scalars().all()
+
+        # 첫 번째 주소라면 기본 배송지로 설정
+        if len(addresses) == 0:
+            create_schema.is_default = True
+
+        # 기본 배송지 설정 시 기존 기본 배송지 해제
+        if create_schema.is_default:
+            for addr in addresses:
+                addr.is_default = False
+                session.add(addr)
+
+        address = Address(user_id=user_id, **create_schema.model_dump())
+        session.add(address)
+        await session.flush()
+        return address
 
 
 user_service = UserService()

@@ -69,7 +69,7 @@ async def delete(
 @router.get("/me/addresses", response_model=List[AddressSchema])
 async def get_address_list(
     user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session),
+    session: AsyncSession = Depends(get_db_read_session),
 ) -> Sequence[Address]:
     return await user_service.get_address_list(session, user.id)
 
@@ -80,3 +80,11 @@ async def create_address(
     session: AsyncSession = Depends(get_db_session),
 ) -> Address:
     return await user_service.create_address(session, user.id, address_create)
+
+@router.delete("/me/addresses/{address_id}", status_code=204)
+async def delete_address(
+    address_id: int,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    await user_service.delete_address(session, user.id, address_id)

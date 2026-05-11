@@ -145,6 +145,24 @@ class UserService:
         result = await session.execute(statement)
         return result.scalars().all()
 
+    async def get_address(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        address_id: int,
+    ) -> Address:
+        statement = select(Address).where(
+            Address.id == address_id,
+            Address.user_id == user_id,
+        )
+        result = await session.execute(statement)
+        address = result.scalar_one_or_none()
+
+        if address is None:
+            raise ResourceNotFound()
+
+        return address
+
     async def create_address(
         self,
         session: AsyncSession,
@@ -170,6 +188,18 @@ class UserService:
 
         address = Address(user_id=user_id, **create_schema.model_dump())
         session.add(address)
+        await session.flush()
+        return address
+
+    async def delete_address(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        address_id: int,
+    ) -> Address:
+        address = await self.get_address(session, user_id, address_id)
+
+        await session.delete(address)
         await session.flush()
         return address
 

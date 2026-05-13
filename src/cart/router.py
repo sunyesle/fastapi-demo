@@ -9,17 +9,17 @@ from src.exceptions import ResourceNotFound
 from src.models import Cart
 
 
-router = APIRouter(prefix="/cart", tags=["cart"])
+router = APIRouter(prefix="", tags=["cart"])
 
 
-@router.get("/me", response_model=CartSchema)
+@router.get("/me/cart", response_model=CartSchema)
 async def me(
     cart: Cart = Depends(get_current_cart),
     session: AsyncSession = Depends(get_db_read_session),
 ) -> Cart:
     return await cart_service.get(session, cart.id)
 
-@router.post("/me/items", response_model=CartSchema, status_code=201)
+@router.post("/me/cart/items", response_model=CartSchema, status_code=201)
 async def add_item(
     data: CartItemAdd,
     cart: Cart = Depends(get_current_cart),
@@ -28,7 +28,7 @@ async def add_item(
     await cart_service.add_item(session, cart.id, data.product_id, data.quantity)
     return cart
 
-@router.put("/me/items/{item_id}", response_model=CartSchema)
+@router.put("/me/cart/items/{item_id}", response_model=CartSchema)
 async def update_item(
     item_id: int,
     data: CartItemUpdate,
@@ -43,7 +43,7 @@ async def update_item(
         update_schema=data
     )
 
-@router.delete("/me/items/{item_id}", status_code=204)
+@router.delete("/me/cart/items/{item_id}", status_code=204)
 async def delete_item(
     item_id: int,
     cart: Cart = Depends(get_current_cart),
@@ -55,7 +55,7 @@ async def delete_item(
         item_id=item_id,
     )
 
-@router.post("/me/validate")
+@router.post("/me/cart/validate")
 async def validate(
     cart: Cart = Depends(get_current_cart),
     session: AsyncSession = Depends(get_db_session),

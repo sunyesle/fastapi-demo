@@ -1,5 +1,4 @@
 from typing import Annotated
-from venv import logger
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

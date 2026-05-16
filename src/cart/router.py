@@ -5,7 +5,6 @@ from src.cart.dependencies import get_current_cart
 from src.cart.schemas import CartItemAdd, CartItemUpdate, CartSchema
 from src.cart.service import cart_service
 from src.database import get_db_read_session, get_db_session
-from src.exceptions import ResourceNotFound
 from src.models import Cart
 
 

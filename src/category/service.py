@@ -39,17 +39,17 @@ class CategoryService:
         id: int,
     ) -> Category | None:
         return await session.get(Category, id)
-    
+
     async def get(
         self,
         session: AsyncSession,
         id: int,
     ) -> Category:
         category = await self.get_or_none(session, id)
-        
+
         if category is None:
             raise ResourceNotFound()
-        
+
         return category
 
     async def create(

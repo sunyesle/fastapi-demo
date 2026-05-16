@@ -148,7 +148,7 @@ class CartService:
         item = next((i for i in cart.items if i.id == item_id), None)
         if not item:
             raise ResourceNotFound()
-        
+
         await session.delete(item)
 
         cart.set_modified_at()

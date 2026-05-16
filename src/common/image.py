@@ -19,17 +19,17 @@ async def save_image(file: UploadFile, folder: str) -> str:
     # 파일명 여부 확인
     if not file.filename:
         raise BadRequest()
-    
+
     # 확장자 확인
     ext = Path(file.filename).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise BadRequest("Unsupported file format.")
-    
+
     # 파일 크기 확인
     content = await file.read()
     if len(content) > MAX_SIZE:
         raise BadRequest(f"File size must be less than {MAX_SIZE // 1024 // 1024}MB.")
-    
+
     # 파일명 생성
     filename = f"{uuid.uuid4().hex}{ext}"
 
@@ -41,7 +41,7 @@ async def save_image(file: UploadFile, folder: str) -> str:
     file_path = folder_path / filename
     with open(file_path, "wb") as f:
         f.write(content)
-    
+
     # 이미지 최적화
     optimize_image(file_path)
 
@@ -56,10 +56,10 @@ def optimize_image(file_path: Path, max_width: int = 1200) -> None:
                 ratio = max_width / img.width
                 new_height = int(img.height * ratio)
                 img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
-            
+
             if img.mode in ('RGBA', 'P'):
                 img = img.convert('RGB')
-            
+
             img.save(file_path, "JPEG", quality=85, optimize=True)
     except Exception as e:
         print(f"Image optimization error: {e}")
@@ -67,7 +67,7 @@ def optimize_image(file_path: Path, max_width: int = 1200) -> None:
 def delete_image(url: str) -> bool:
     if not url.startswith("/uploads/"):
         return False
-    
+
     file_path = Path(url.replace("/uploads/", str(UPLOAD_DIR) + "/"))
     if file_path.exists():
         file_path.unlink()

@@ -1,6 +1,6 @@
-from typing import Sequence
+from typing import Sequence, cast
 
-from sqlalchemy import func, select
+from sqlalchemy import CursorResult, Update, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -186,6 +186,24 @@ class ProductService:
             raise ResourceNotFound()
         if product.stock < requested_quantity:
             raise BadRequest("Insufficient stock.")
+
+    async def decrease_stock(
+        self,
+        session: AsyncSession,
+        product_id: int,
+        quantity: int
+    ):
+        statement = (
+            Update(Product)
+            .where(Product.id == product_id)
+            .where(Product.stock >= quantity)
+            .values(stock=Product.stock - quantity)
+        )
+        result = await session.execute(statement)
+        result = cast(CursorResult, result)
+        
+        if result.rowcount == 0:
+            raise BadRequest("Product {product_id} Insufficient stock.")
 
 
 product_service = ProductService()

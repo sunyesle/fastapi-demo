@@ -236,5 +236,18 @@ class CartService:
                 errors=[{"item_id": item_id, "product_id": product_id, "message": msg}]
             )
 
+    async def clear_cart(
+        self,
+        session: AsyncSession,
+        cart_id: int,
+    ) -> Cart:
+        cart = await self.get(session, cart_id)
+
+        cart.items = []
+        cart.set_modified_at()
+
+        await session.flush()
+        return cart
+
 
 cart_service = CartService()

@@ -11,6 +11,7 @@ from src.cart.service import cart_service
 from src.common.pagination import Pagination
 from src.common.utils import utc_now
 from src.enums import OrderStatus
+from src.exceptions import ResourceNotFound
 from src.models import Address
 from src.models.order import Order, OrderItem
 from src.order.schemas import CheckoutSchema, OrderCreate
@@ -172,7 +173,7 @@ class OrderService():
 
         if status is not None:
             statement = statement.where(Order.status == status)
-        
+
         count_statement = select(func.count()).select_from(statement.subquery())
         count_result = await session.execute(count_statement)
         count = count_result.scalar_one()
@@ -183,6 +184,27 @@ class OrderService():
         results = result.scalars().all()
 
         return results, count
+
+    async def get(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        order_number: str,
+    ) -> Order:
+        statement = (
+            select(Order)
+            .options(selectinload(Order.items))
+        ).where(
+            Order.order_number == order_number,
+            Order.user_id == user_id,
+        )
+        result = await session.execute(statement)
+        order = result.scalar_one_or_none()
+
+        if order is None:
+            raise ResourceNotFound()
+
+        return order
 
 
 order_service = OrderService()

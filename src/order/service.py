@@ -2,11 +2,15 @@ import random
 import string
 from typing import Sequence
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.cart.schemas import CartItemSchema
 from src.cart.service import cart_service
+from src.common.pagination import Pagination
 from src.common.utils import utc_now
+from src.enums import OrderStatus
 from src.models import Address
 from src.models.order import Order, OrderItem
 from src.order.schemas import CheckoutSchema, OrderCreate
@@ -153,6 +157,32 @@ class OrderService():
 
         await session.flush()
         return order
+
+    async def list(
+        self,
+        session: AsyncSession,
+        pagination: Pagination,
+        user_id: int,
+        status: OrderStatus | None = None,
+    ) -> tuple[Sequence[Order], int]:
+        statement = (
+            select(Order)
+            .options(selectinload(Order.items))
+        ).where(Order.user_id == user_id)
+
+        if status is not None:
+            statement = statement.where(Order.status == status)
+        
+        count_statement = select(func.count()).select_from(statement.subquery())
+        count_result = await session.execute(count_statement)
+        count = count_result.scalar_one()
+
+        offset = (pagination.page - 1) * pagination.size
+        statement = statement.offset(offset).limit(pagination.size)
+        result = await session.execute(statement)
+        results = result.scalars().all()
+
+        return results, count
 
 
 order_service = OrderService()

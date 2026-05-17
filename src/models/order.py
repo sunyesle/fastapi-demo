@@ -41,6 +41,15 @@ class Order(RecordModel):
     user: Mapped["User"] = relationship("User")
     items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 
+    @property
+    def is_cancellable(self) -> bool:
+        non_cancellable_status = {
+            OrderStatus.shipping,
+            OrderStatus.delivered,
+            OrderStatus.cancelled
+        }
+        return self.status not in non_cancellable_status
+
 class OrderItem(RecordModel):
     __tablename__ = "order_items"
 

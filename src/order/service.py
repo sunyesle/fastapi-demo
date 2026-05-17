@@ -11,7 +11,7 @@ from src.cart.service import cart_service
 from src.common.pagination import Pagination
 from src.common.utils import utc_now
 from src.enums import OrderStatus
-from src.exceptions import ResourceNotFound
+from src.exceptions import BadRequest, ResourceNotFound
 from src.models import Address
 from src.models.order import Order, OrderItem
 from src.order.schemas import CheckoutSchema, OrderCreate
@@ -156,6 +156,25 @@ class OrderService():
 
             order.items.append(order_item)
 
+        await session.flush()
+        return order
+
+    async def cancel_order(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        order_number: str,
+    ) -> Order:
+        order = await self.get(session, user_id, order_number)
+
+        if not order.is_cancellable:
+            raise BadRequest("This order cannot be cancelled.")
+
+        order.status = OrderStatus.cancelled
+        order.cancelled_at = utc_now()
+        order.modified_at = utc_now()
+
+        session.add(order)
         await session.flush()
         return order
 

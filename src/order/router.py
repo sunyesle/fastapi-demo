@@ -52,6 +52,14 @@ async def list(
         pagination
     )
 
+@router.post("/orders/{order_number}/cancel", response_model=OrderSchema)
+async def cancel(
+    order_number: str,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> Order:
+    return await order_service.cancel_order(session, user.id, order_number)
+
 @router.get("/orders/{order_number}", response_model=OrderSchema)
 async def get(
     order_number: str,

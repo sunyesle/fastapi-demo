@@ -8,7 +8,8 @@ from src.auth.schemas import TokenData
 from src.common import jwt
 from src.config import settings
 from src.database import get_db_read_session
-from src.exceptions import Unauthorized
+from src.enums import UserRole
+from src.exceptions import Forbidden, Unauthorized
 from src.models import User
 from src.user.service import user_service
 
@@ -43,4 +44,11 @@ async def get_current_user(
 ) -> User:
     if current_user is None:
         raise Unauthorized()
+    return current_user
+
+async def get_current_admin_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if current_user.role != UserRole.admin:
+        raise Forbidden()
     return current_user

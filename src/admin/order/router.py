@@ -31,3 +31,10 @@ async def order_list(
         count,
         pagination
     )
+
+@router.get("/status-counts")
+async def order_status_counts(
+    admin: User = Depends(get_current_admin_user),
+    session: AsyncSession = Depends(get_db_read_session),
+) -> dict:
+    return await admin_order_service.get_order_status_counts(session)

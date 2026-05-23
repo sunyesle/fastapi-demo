@@ -36,5 +36,31 @@ class AdminOrderService():
 
         return results, count
 
+    async def get_order_status_counts(
+        self,
+        session: AsyncSession,
+    ) -> dict:
+        return {
+            "all": await self.count_orders(session),
+            "pending": await self.count_orders(session, OrderStatus.pending),
+            "paid": await self.count_orders(session, OrderStatus.paid),
+            "preparing": await self.count_orders(session, OrderStatus.preparing),
+            "shipping": await self.count_orders(session, OrderStatus.shipping),
+            "delivered": await self.count_orders(session, OrderStatus.delivered),
+            "cancelled": await self.count_orders(session, OrderStatus.cancelled),
+        }
+
+    async def count_orders(
+        self,
+        session: AsyncSession,
+        status: OrderStatus | None = None,
+    ) -> int:
+        statement = select(func.count(Order.id))
+
+        if status is not None:
+            statement = statement.where(Order.status == status)
+
+        return (await session.execute(statement)).scalar_one()
+
 
 admin_order_service = AdminOrderService()

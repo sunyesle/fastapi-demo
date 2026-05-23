@@ -14,7 +14,7 @@ from src.models import Product, ProductImage
 router = APIRouter(prefix="/products", tags=["products"])
 
 
-@router.get("/", response_model=Page[ProductSchema])
+@router.get("", response_model=Page[ProductSchema])
 async def list(
     pagination: PaginationQuery,
     category_id: int | None = None,
@@ -48,7 +48,7 @@ async def get(
 
     return product
 
-@router.post("/", response_model=ProductSchema, status_code=201)
+@router.post("", response_model=ProductSchema, status_code=201)
 async def create(
     product_create: ProductCreate,
     session: AsyncSession = Depends(get_db_session),

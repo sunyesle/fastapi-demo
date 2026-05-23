@@ -13,11 +13,11 @@ from src.models.user import User
 
 router = APIRouter(prefix="/admin/orders", tags=["admin-order-dashboard"])
 
-@router.get("/orders", response_model=Page[AdminOrderSchema])
+@router.get("", response_model=Page[AdminOrderSchema])
 async def order_list(
     pagination: PaginationQuery,
     status: OrderStatus | None = None,
-    user: User = Depends(get_current_admin_user),
+    admin: User = Depends(get_current_admin_user),
     session: AsyncSession = Depends(get_db_read_session),
 ) -> Page[AdminOrderSchema]:
     results, count = await admin_order_service.get_order_list(

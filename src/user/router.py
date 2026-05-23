@@ -21,7 +21,7 @@ async def me(
 ) -> User:
     return await user_service.get(session, user.id)
 
-@router.get("/", response_model=Page[UserSchema])
+@router.get("", response_model=Page[UserSchema])
 async def list(
     pagination: PaginationQuery,
     active_only: bool = True,
@@ -44,7 +44,7 @@ async def get(
 
     return user
 
-@router.post("/", response_model=UserSchema, status_code=201)
+@router.post("", response_model=UserSchema, status_code=201)
 async def create(
     user_create: UserCreate,
     session: AsyncSession = Depends(get_db_session),

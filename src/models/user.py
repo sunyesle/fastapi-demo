@@ -17,7 +17,7 @@ class User(RecordModel):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.user)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_login_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True, default=None)
-    
+
     addresses: Mapped[list["Address"]] = relationship("Address", back_populates="user")
 
 class Address(RecordModel):

@@ -26,7 +26,7 @@ class Page[T: Any](BaseModel):
     page: int
     size: int
     pages: int
-    
+
     @classmethod
     def from_paginated_results(cls, items: Sequence[T], total: int, pagination: Pagination) -> Self:
         total_pages = math.ceil(total / max(1, pagination.size))

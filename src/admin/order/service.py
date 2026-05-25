@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from src.common.pagination import Pagination
 from src.enums import OrderStatus
+from src.exceptions import ResourceNotFound
 from src.models.order import Order
 
 
@@ -35,6 +36,24 @@ class AdminOrderService():
         results = result.scalars().all()
 
         return results, count
+
+    async def get_order(
+        self,
+        session: AsyncSession,
+        order_id: int,
+    ) -> Order:
+        statement = (
+            select(Order)
+            .options(selectinload(Order.items))
+            .where(Order.id == order_id)
+        )
+        result = await session.execute(statement)
+        order = result.scalar_one_or_none()
+
+        if order is None:
+            raise ResourceNotFound()
+
+        return order
 
     async def get_order_status_counts(
         self,

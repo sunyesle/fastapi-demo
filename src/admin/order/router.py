@@ -8,6 +8,7 @@ from src.common.pagination import Page, PaginationQuery
 from src.database import get_db_read_session
 from src.admin.order.service import admin_order_service
 from src.enums import OrderStatus
+from src.models.order import Order
 from src.models.user import User
 
 
@@ -31,6 +32,14 @@ async def order_list(
         count,
         pagination
     )
+
+@router.get("/{order_id}", response_model=AdminOrderSchema)
+async def order_detail(
+    order_id: int,
+    admin: User = Depends(get_current_admin_user),
+    session: AsyncSession = Depends(get_db_read_session),
+) -> Order:
+    return await admin_order_service.get_order(session, order_id)
 
 @router.get("/status-counts")
 async def order_status_counts(

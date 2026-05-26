@@ -2,10 +2,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import APIRouter, Depends
 
-from src.admin.schemas import AdminOrderSchema
+from src.admin.schemas import AdminOrderSchema, AdminOrderStatusUpdate
 from src.auth.dependencies import get_current_admin_user
 from src.common.pagination import Page, PaginationQuery
-from src.database import get_db_read_session
+from src.database import get_db_read_session, get_db_session
 from src.admin.order.service import admin_order_service
 from src.enums import OrderStatus
 from src.models.order import Order
@@ -47,3 +47,12 @@ async def order_status_counts(
     session: AsyncSession = Depends(get_db_read_session),
 ) -> dict:
     return await admin_order_service.get_order_status_counts(session)
+
+@router.put("/{order_id}/status", response_model=AdminOrderSchema)
+async def update_order_status(
+    order_id: int,
+    order_update: AdminOrderStatusUpdate,
+    admin: User = Depends(get_current_admin_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> Order:
+    return await admin_order_service.update_order_status(session, order_id, order_update)

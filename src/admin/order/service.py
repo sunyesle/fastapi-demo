@@ -4,7 +4,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.admin.schemas import AdminOrderStatusUpdate
 from src.common.pagination import Pagination
+from src.common.utils import utc_now
 from src.enums import OrderStatus
 from src.exceptions import ResourceNotFound
 from src.models.order import Order
@@ -80,6 +82,21 @@ class AdminOrderService():
             statement = statement.where(Order.status == status)
 
         return (await session.execute(statement)).scalar_one()
+
+    async def update_order_status(
+        self,
+        session: AsyncSession,
+        order_id: int,
+        update_schema: AdminOrderStatusUpdate,
+    ) -> Order:
+        order = await self.get_order(session, order_id)
+
+        order.status = update_schema.status
+        order.modified_at = utc_now()
+
+        session.add(order)
+        await session.flush()
+        return order
 
 
 admin_order_service = AdminOrderService()

@@ -32,3 +32,6 @@ class AdminOrderItemBase(Schema):
 
 class AdminOrderItemSchema(AdminOrderItemBase, TimestampedSchema, IDSchema):
     pass
+
+class AdminOrderStatusUpdate(Schema):
+    status: OrderStatus

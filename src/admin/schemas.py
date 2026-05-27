@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from pydantic import Field
 
 from src.common.schemas import IDSchema, Schema, TimestampedSchema
-from src.enums import OrderStatus
+from src.enums import OrderStatus, UserRole
 
 
 class AdminOrderBase(Schema):
@@ -35,3 +37,14 @@ class AdminOrderItemSchema(AdminOrderItemBase, TimestampedSchema, IDSchema):
 
 class AdminOrderStatusUpdate(Schema):
     status: OrderStatus
+
+class AdminUserBase(Schema):
+    username: str
+    name: str
+    phone: str | None = None
+    role: UserRole
+    is_active: bool
+    last_login_at: datetime | None = None
+
+class AdminUserSchema(AdminUserBase, TimestampedSchema, IDSchema):
+    pass

@@ -29,3 +29,11 @@ async def user_list(
         count,
         pagination
     )
+
+@router.get("/{user_id}", response_model=AdminUserSchema)
+async def user_detail(
+    user_id: int,
+    admin: User = Depends(get_current_admin_user),
+    session: AsyncSession = Depends(get_db_read_session),
+) -> User:
+    return await admin_user_service.get_user(session, user_id)

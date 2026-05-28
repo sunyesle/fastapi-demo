@@ -8,6 +8,7 @@ from src.cart.router import router as cart_router
 from src.order.router import router as order_router
 from src.admin.dashboard.router import router as admin_dashboard_router
 from src.admin.order.router import router as admin_order_router
+from src.admin.user.router import router as admin_user_router
 
 router = APIRouter()
 
@@ -19,3 +20,4 @@ router.include_router(cart_router)
 router.include_router(order_router)
 router.include_router(admin_dashboard_router)
 router.include_router(admin_order_router)
+router.include_router(admin_user_router)

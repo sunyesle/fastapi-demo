@@ -48,3 +48,6 @@ class AdminUserBase(Schema):
 
 class AdminUserSchema(AdminUserBase, TimestampedSchema, IDSchema):
     pass
+
+class AdminUserStatusUpdate(Schema):
+    is_active: bool

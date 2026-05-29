@@ -2,11 +2,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import APIRouter, Depends
 
-from src.admin.schemas import AdminUserSchema
+from src.admin.schemas import AdminUserSchema, AdminUserStatusUpdate
 from src.admin.user.service import admin_user_service
 from src.auth.dependencies import get_current_admin_user
 from src.common.pagination import Page, PaginationQuery
-from src.database import get_db_read_session
+from src.database import get_db_read_session, get_db_session
 from src.models.user import User
 
 router = APIRouter(prefix="/admin/users", tags=["admin-user-dashboard"])
@@ -37,3 +37,12 @@ async def user_detail(
     session: AsyncSession = Depends(get_db_read_session),
 ) -> User:
     return await admin_user_service.get_user(session, user_id)
+
+@router.put("/{user_id}/status", response_model=AdminUserSchema)
+async def update_user_status(
+    user_id: int,
+    user_update: AdminUserStatusUpdate,
+    admin: User = Depends(get_current_admin_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> User:
+    return await admin_user_service.update_user_status(session, user_id, user_update)

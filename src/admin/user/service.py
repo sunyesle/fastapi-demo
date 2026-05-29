@@ -3,7 +3,9 @@ from typing import Sequence
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.admin.schemas import AdminUserStatusUpdate
 from src.common.pagination import Pagination
+from src.common.utils import utc_now
 from src.exceptions import ResourceNotFound
 from src.models import User
 
@@ -47,6 +49,21 @@ class AdminUserService():
         if user is None:
             raise ResourceNotFound()
 
+        return user
+
+    async def update_user_status(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        update_schema: AdminUserStatusUpdate,
+    ) -> User:
+        user = await self.get_user(session, user_id)
+
+        user.is_active = update_schema.is_active
+        user.modified_at = utc_now()
+
+        session.add(user)
+        await session.flush()
         return user
 
 
